@@ -1,0 +1,165 @@
+model "The 3-Echelon Multi-period Warehouse Location Problem with Uncertainty"
+  uses "mmsystem", "mmjobs", "mmxprs", "mmsheet"
+
+! ============================================================================
+! Reading problem parameters
+! ============================================================================
+!filename := "CaseStudyData.txt"; 
+filename := "CaseStudyData_80_40.txt";
+
+declarations
+  ! Number of customers
+  nbCustomers: integer
+  ! Number of candidate locations
+  nbCandidates: integer
+  ! Number of suppliers
+  nbSuppliers: integer
+  ! Number of product groups
+  nbProductGroups: integer
+  ! Number of vehicle types
+  nbVehicleTypes: integer
+  ! Number of periods
+  nbPeriods: integer
+  ! Number of scenarios
+  nbScenarios: integer
+end-declarations
+
+! Read the various numbers from the file
+initializations from filename
+  nbCustomers nbCandidates nbSuppliers nbProductGroups nbVehicleTypes 
+  nbPeriods nbScenarios
+end-initializations
+
+declarations
+  ! Set of customers
+  Customers = 1..nbCustomers
+  ! Set of candidate locations
+  Candidates = 1..nbCandidates
+  ! Set of suppliers
+  Suppliers = 1..nbSuppliers
+  ! Set of product groups
+  Products = 1..nbProductGroups
+  ! Set of vehicle types
+  Vehicles = 1..nbVehicleTypes
+  ! Set of periods
+  Periods = 1..nbPeriods
+  ! Set of scenarios
+  Scenarios = 1..nbScenarios
+  
+  ! Vector of customer ids
+  CustomerId: array(Customers) of string
+  ! Vectors of customer coordinates
+  CustomerEasting: array(Customers) of real
+  CustomerNorthing: array(Customers) of real
+
+  ! The overall customer demand in kilograms per product group
+  Demand: array(Customers, Products) of integer
+  ! The annual customer demand in kilograms per product group and period
+  DemandPeriods: array(Customers, Products, Periods) of integer
+  ! The annual customer demand in kilograms per product group, period, and scenario
+  DemandPeriodScenarios: array(Customers, Products, Periods, Scenarios) of integer
+  
+  ! Vector of candidate ids
+  CandidateId: array(Candidates) of string
+  ! Vectors of candidate coordinates
+  CandidateEasting: array(Candidates) of real
+  CandidateNorthing: array(Candidates) of real
+  
+  ! Vector of supplier ids
+  SupplierId: array(Suppliers) of integer
+  ! Vectors of supplier coordinates
+  SupplierEasting: array(Suppliers) of real
+  SupplierNorthing: array(Suppliers) of real
+  ! Vector of supplier product groups; recall that each supplier only provides one product group
+  SupplierProductGroup: array(Suppliers) of integer
+  ! Vector of supplier capacity given in kilograms per year
+  SupplierCapacity: array(Suppliers) of real
+  ! Vector of supplier vehicle types
+  SupplierVehicleType: array(Suppliers) of integer
+  
+  ! Setup costs for warehouses
+  Setup: array(Candidates) of integer
+  ! Operating costs for warehouses
+  Operating: array(Candidates) of integer
+  ! Capacity for warehouses
+  Capacity: array(Candidates) of integer
+  
+  ! Distance matrix between candidate locations and customers
+  DistanceCandidateCustomer: array(Candidates,Customers) of real
+  ! Distance matrix between candidate locations and suppliers
+  DistanceCandidateSupplier: array(Candidates,Suppliers) of real
+  ! Matrix of transportation costs between candidate locations and customers
+  CostCandidateCustomers: array(Candidates,Customers) of real
+  ! Matrix of transportation costs between candidate locations and suppliers
+  CostCandidateSupplier: array(Candidates,Suppliers) of real
+
+  ! Vehicle related data. The vehicles are indexed 1, 2, and 3, where 1 stands 
+  ! for 18t trucks, 2 for 7.5t lorries, and 3 for 3.5t vans.
+  ! The vehicle capacity in tonnes
+  VehicleCapacity: array(Vehicles) of real
+  ! The overall cost in pounds per mile travelled
+  VehicleCostPerMileOverall: array(Vehicles) of real
+  ! The overall cost in pounds per mile and tonne transported
+  VehicleCostPerMileAndTonneOverall: array(Vehicles) of real
+  ! The CO2 emission in kilograms per mile and tonne transported
+  VehicleCO2PerMileAndTonne: array(Vehicles) of real
+end-declarations
+
+! Read data
+initializations from filename
+  CustomerId CustomerEasting CustomerNorthing
+  CandidateId CandidateEasting CandidateNorthing
+  SupplierId SupplierEasting SupplierNorthing
+  SupplierProductGroup SupplierCapacity SupplierVehicleType
+  Setup Operating Capacity
+  Demand as "CustomerDemand"
+  DemandPeriods as "CustomerDemandPeriods"
+  DemandPeriodScenarios as "CustomerDemandPeriodScenarios"
+  DistanceCandidateSupplier DistanceCandidateCustomer
+  VehicleCapacity VehicleCostPerMileOverall VehicleCostPerMileAndTonneOverall
+end-initializations
+
+
+! ==================================================================================================
+! Data preparation
+! ==================================================================================================
+
+! Transports between suppliers and locations use either 7.5t or 18t trucks, depending on the 
+! vehicle type. Make sure to convert from tonne to kilogram.
+! --------------------------------------------------------------------------------------------------
+forall(j in Candidates, k in Suppliers) do
+  if(SupplierVehicleType(k) = 1) then
+    CostCandidateSupplier(j,k) := 2 * DistanceCandidateSupplier(j,k) * VehicleCostPerMileAndTonneOverall(1) / 1000
+  else
+    CostCandidateSupplier(j,k) := 2 * DistanceCandidateSupplier(j,k) * VehicleCostPerMileAndTonneOverall(2) / 1000
+  end-if
+end-do
+
+! Transports between locations and customers use 3.5t vans.
+! Make sure to convert from tonne to kilogram.
+! --------------------------------------------------------------------------------------------------
+forall(j in Candidates, i in Customers)
+  CostCandidateCustomers(j,i) := 2 * DistanceCandidateCustomer(j,i) * VehicleCostPerMileAndTonneOverall(3) / 1000
+
+! To write data to csv if you want anything in python
+initializations to "mmsheet.csv:Demand.csv"
+  Demand as 'skiph+;[A:C](Customer,Product,Demand)'
+ end-initializations 
+initializations to "mmsheet.csv:DemandPeriods.csv"
+DemandPeriods as 'skiph+;[A:D](Customer,Product,Period,Demand)'
+end-initializations
+initializations to "mmsheet.csv:DemandPeriodScenarios.csv"
+DemandPeriodScenarios as 'skiph+;[A:E](Customer,Product,Period,Scenario,Demand)'
+end-initializations
+
+! ==================================================================================================
+! Optimization
+! ==================================================================================================
+
+
+! ==================================================================================================
+! Results
+! ==================================================================================================
+
+
+end-model
