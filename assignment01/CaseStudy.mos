@@ -4,8 +4,8 @@ model "The 3-Echelon Multi-period Warehouse Location Problem with Uncertainty"
 ! ============================================================================
 ! Reading problem parameters
 ! ============================================================================
-!filename := "CaseStudyData.txt"; 
-filename := "CaseStudyData_80_40.txt";
+filename := "CaseStudyData.txt"; 
+! filename := "CaseStudyData_80_40.txt";
 
 declarations
   ! Number of customers
@@ -142,24 +142,114 @@ forall(j in Candidates, i in Customers)
   CostCandidateCustomers(j,i) := 2 * DistanceCandidateCustomer(j,i) * VehicleCostPerMileAndTonneOverall(3) / 1000
 
 ! To write data to csv if you want anything in python
-initializations to "mmsheet.csv:Demand.csv"
-  Demand as 'skiph+;[A:C](Customer,Product,Demand)'
- end-initializations 
-initializations to "mmsheet.csv:DemandPeriods.csv"
-DemandPeriods as 'skiph+;[A:D](Customer,Product,Period,Demand)'
-end-initializations
-initializations to "mmsheet.csv:DemandPeriodScenarios.csv"
-DemandPeriodScenarios as 'skiph+;[A:E](Customer,Product,Period,Scenario,Demand)'
-end-initializations
+! initializations to "mmsheet.csv:Demand.csv"
+!   Demand as 'skiph+;[A:C](Customer,Product,Demand)'
+! end-initializations 
+! initializations to "mmsheet.csv:DemandPeriods.csv"
+! DemandPeriods as 'skiph+;[A:D](Customer,Product,Period,Demand)'
+! end-initializations
+! initializations to "mmsheet.csv:DemandPeriodScenarios.csv"
+! DemandPeriodScenarios as 'skiph+;[A:E](Customer,Product,Period,Scenario,Demand)'
+! end-initializations
+
+! ==================================================================================================
+! Variables Decalration
+! ==================================================================================================
+declarations
+  ! Whether warehouse w covers a demand for product p of customer c
+  x: array(Candidates, Customers, Products) of mpvar
+  ! A binary saying whether a warehouse w is opened
+  y: array(Candidates) of mpvar
+
+  ! How many kg a supplier s supplies for warehouse w
+  z: array(Candidates, Suppliers, Products) of mpvar
+  
+  FixedVehicleType = 2
+  FixedVehicleCap = VehicleCapacity(FixedVehicleType)
+end-declarations
+
+! ==================================================================================================
+! Constraints
+! ==================================================================================================
+forall(w in Candidates) y(w) is_binary
+forall(w in Candidates, c in Customers, p in Products) x(w,c,p) is_binary
+
+! A customer c can be covered by a warehouse w if and only if that warehosue is open
+forall(w in Candidates, c in Customers, p in Products) x(w,c,p) <= y(w)
+
+! A customer c should be covered by only one warehouse w
+forall(c in Customers, p in Products) sum(w in Candidates) x(w,c,p) = 1
+
+! Amount of supplies for product p sent to warehouse w from supplier s should not exceed the supplier limit
+! If the supplier does not provide that product p, there should not be any amount of supply of that product p sent
+! (i.e. should be 0)
+forall(s in Suppliers) do
+  forall(p in Products) do
+    if (SupplierProductGroup(s) = p) then
+      sum(w in Candidates) z(w,s,p) <= SupplierCapacity(s)
+    else 
+      sum(w in Candidates) z(w,s,p) = 0
+    end-if
+  end-do
+end-do
+
+! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
+forall(w in Candidates, p in Products) sum(s in Suppliers) z(w,s,p) = sum(c in Customers) Demand(c,p) * x(w,c,p)
+
+! Each warehouse has its own capacity
+! Limit the warehouse capacity by suppliers
+forall(w in Candidates) sum(s in Suppliers, p in Products) z(w,s,p) <= Capacity(w)
+! Alternatively use customer demands instead to limit the capacity
+! forall(w in Candidates) sum(c in Customers, p in Products) Demand(c) * x(w,c,p) <= Capacity(w)
+
+! ==================================================================================================
+! Objective
+! ==================================================================================================
+obj := sum(w in Candidates) Setup(w) * y(w) + 
+      sum(w in Candidates, c in Customers, p in Products) x(w,c,p) * CostCandidateCustomers(w,c) * Demand(c,p) * 2 + 
+      sum(w in Candidates, s in Suppliers, p in Products) z(w,s,p) * CostCandidateSupplier(w,s) * 2
 
 ! ==================================================================================================
 ! Optimization
 ! ==================================================================================================
 
+setparam("XPRS_MAXTIME", 60)
+setparam("XPRS_VERBOSE", true)
+minimize(obj)
 
 ! ==================================================================================================
 ! Results
 ! ==================================================================================================
+write("Selected Locations: ")
+forall(w in Candidates | getsol(y(w)) > 0.001)
+  write(w, " ")
+writeln; writeln
 
+writeln("Warehouse utilization: ", sum(c in Customers, p in Products) Demand(c,p))
+forall(w in Candidates, p in Products | getsol(y(w)) > 0.001) do
+  foo := sum(c in Customers) Demand(c,p) * getsol(x(w,c,p))
+  writeln("  ", w, " ", "p: ", foo)
+end-do
+writeln
+
+writeln("Supplier utilization: ", sum(s in Suppliers) SupplierCapacity(s))
+forall(s in Suppliers) do
+  foo := sum(w in Candidates, p in Products) getsol(z(w,s,p))
+  writeln("  ", s, ": ", foo, " (", SupplierCapacity(s), ")")
+end-do
+writeln
+
+writeln("Supply allocations: ")
+forall(w in Candidates) do
+  forall(s in Suppliers, p in Products | getsol(z(w,s,p)) > 0.001) do
+    writeln("  ", w, " -> ", s, ": ", getsol(z(w,s,p)))
+  end-do
+end-do
+writeln; writeln
+
+writeln("Setup costs: ", sum(w in Candidates) Setup(w)*y(w).sol)
+writeln("Transportation costs warehouse - customers: ", sum(c in Customers, w in Candidates, p in Products) CostCandidateCustomers(w,c)*x(w,c,p).sol*Demand(c,p))
+writeln("Transportation costs suppliers - warehouse: ", sum(w in Candidates, s in Suppliers, p in Products) CostCandidateSupplier(w,s)*z(w,s,p).sol)
+writeln("Total costs: ", getobjval)
 
 end-model
