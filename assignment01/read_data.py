@@ -8,6 +8,7 @@ import re
 import numpy as np
 from collections import defaultdict
 
+
 def parse_dat_file(file_path):
     parsed_data = defaultdict(dict)  # Dictionary to store variables and their indexed values
     current_variable = None
@@ -85,7 +86,3 @@ parsed_data = parse_dat_file(file_path)
 # Print parsed variables and their indexed values
 for variable, value_dict in parsed_data.items():
     print(f"{variable}:")
-   
-    
-
-
