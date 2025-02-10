@@ -157,57 +157,68 @@ forall(j in Candidates, i in Customers)
 ! ==================================================================================================
 declarations
   ! Whether warehouse w covers a demand for product p of customer c
-  x: array(Candidates, Customers, Products) of mpvar
-  ! A binary saying whether a warehouse w is opened
-  y: array(Candidates) of mpvar
+  x: array(Candidates, Customers, Products, Periods) of mpvar
+  ! A binary saying whether a warehouse w is setup on period t
+  y: array(Candidates, Periods) of mpvar
+  ! A binary showing whether a warehouse w is open in period t
+  o: array(Candidates, Periods) of mpvar
 
   ! How many kg a supplier s supplies for warehouse w
-  z: array(Candidates, Suppliers, Products) of mpvar
-  
-  FixedVehicleType = 2
-  FixedVehicleCap = VehicleCapacity(FixedVehicleType)
+  z: array(Candidates, Suppliers, Products, Periods) of mpvar
 end-declarations
 
 ! ==================================================================================================
 ! Constraints
 ! ==================================================================================================
-forall(w in Candidates) y(w) is_binary
-forall(w in Candidates, c in Customers, p in Products) x(w,c,p) is_binary
+forall(w in Candidates, t in Periods) do
+  y(w,t) is_binary
+  o(w,t) is_binary
+end-do
+forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) is_binary
 
 ! A customer c can be covered by a warehouse w if and only if that warehosue is open
-forall(w in Candidates, c in Customers, p in Products) x(w,c,p) <= y(w)
+forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= o(w,t)
 
 ! A customer c should be covered by only one warehouse w
-forall(c in Customers, p in Products) sum(w in Candidates) x(w,c,p) = 1
+forall(c in Customers, p in Products, t in Periods) sum(w in Candidates) x(w,c,p,t) = 1
 
 ! Amount of supplies for product p sent to warehouse w from supplier s should not exceed the supplier limit
 ! If the supplier does not provide that product p, there should not be any amount of supply of that product p sent
 ! (i.e. should be 0)
-forall(s in Suppliers) do
+forall(s in Suppliers, t in Periods) do
   forall(p in Products) do
     if (SupplierProductGroup(s) = p) then
-      sum(w in Candidates) z(w,s,p) <= SupplierCapacity(s)
-    else 
-      sum(w in Candidates) z(w,s,p) = 0
+      ! if the supplier provides this product type
+      sum(w in Candidates) z(w,s,p,t) <= SupplierCapacity(s)
+    else
+      ! if supplier does not provide this product type
+      sum(w in Candidates) z(w,s,p,t) = 0
     end-if
   end-do
 end-do
 
 ! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
-forall(w in Candidates, p in Products) sum(s in Suppliers) z(w,s,p) = sum(c in Customers) Demand(c,p) * x(w,c,p)
+forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Customers) DemandPeriods(c,p,t) * x(w,c,p,t)
 
 ! Each warehouse has its own capacity
 ! Limit the warehouse capacity by suppliers
-forall(w in Candidates) sum(s in Suppliers, p in Products) z(w,s,p) <= Capacity(w)
+forall(w in Candidates, t in Periods) sum(s in Suppliers, p in Products) z(w,s,p,t) <= Capacity(w)
 ! Alternatively use customer demands instead to limit the capacity
-! forall(w in Candidates) sum(c in Customers, p in Products) Demand(c) * x(w,c,p) <= Capacity(w)
+! forall(w in Candidates, t in Periods) sum(c in Customers, p in Products) Demand(c) * x(w,c,p,t) <= Capacity(w)
+
+! If a warehouse w is already setup, it needs to be open for the subsequent period
+forall(w in Candidates, t in Periods) o(w,t) = sum(t1 in 1..t) y(w,t1)
+
+! A warehouse w can be setup only at most once
+forall(w in Candidates) sum(t in Periods) y(w,t) <= 1
 
 ! ==================================================================================================
 ! Objective
 ! ==================================================================================================
-obj := sum(w in Candidates) Setup(w) * y(w) + 
-      sum(w in Candidates, c in Customers, p in Products) x(w,c,p) * CostCandidateCustomers(w,c) * Demand(c,p) * 2 + 
-      sum(w in Candidates, s in Suppliers, p in Products) z(w,s,p) * CostCandidateSupplier(w,s) * 2
+obj := sum(w in Candidates, t in Periods) Setup(w) * y(w,t) + ! setup cost
+      sum(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) * CostCandidateCustomers(w,c) * DemandPeriods(c,p,t) * 2 + ! customer transportation cost
+      sum(w in Candidates, s in Suppliers, p in Products, t in Periods) z(w,s,p,t) * CostCandidateSupplier(w,s) * 2 + ! supplier transportation cost
+      sum(w in Candidates, t in Periods) o(w,t) * Operating(w) ! operating cost per year
 
 ! ==================================================================================================
 ! Optimization
@@ -215,41 +226,53 @@ obj := sum(w in Candidates) Setup(w) * y(w) +
 
 setparam("XPRS_MAXTIME", 60)
 setparam("XPRS_VERBOSE", true)
+writeln("Optimization Started")
 minimize(obj)
+writeln("Optimization Done")
 
 ! ==================================================================================================
 ! Results
 ! ==================================================================================================
 write("Selected Locations: ")
-forall(w in Candidates | getsol(y(w)) > 0.001)
-  write(w, " ")
+forall(w in Candidates, t in Periods | getsol(y(w,t)) > 0.001)
+  write(w, " in period ", t)
 writeln; writeln
 
-writeln("Warehouse utilization: ", sum(c in Customers, p in Products) Demand(c,p))
-forall(w in Candidates, p in Products | getsol(y(w)) > 0.001) do
-  foo := sum(c in Customers) Demand(c,p) * getsol(x(w,c,p))
-  writeln("  ", w, " ", "p: ", foo)
+forall(t in Periods) do
+  writeln("Period: ", t)
+  writeln("Warehouse utilization: ", sum(c in Customers, p in Products) Demand(c,p))
+  forall(w in Candidates, p in Products | getsol(y(w,t)) > 0.001) do
+    foo := sum(c in Customers) DemandPeriods(c,p,t) * getsol(x(w,c,p,t))
+    writeln("  ", w, " ", "p: ", foo)
+  end-do
 end-do
 writeln
 
-writeln("Supplier utilization: ", sum(s in Suppliers) SupplierCapacity(s))
-forall(s in Suppliers) do
-  foo := sum(w in Candidates, p in Products) getsol(z(w,s,p))
-  writeln("  ", s, ": ", foo, " (", SupplierCapacity(s), ")")
+
+forall(t in Periods) do
+  writeln("Period: ", t)
+  writeln("Supplier utilization: ", sum(s in Suppliers) SupplierCapacity(s))
+  forall(s in Suppliers) do
+    foo := sum(w in Candidates, p in Products) getsol(z(w,s,p,t))
+    writeln("  ", s, ": ", foo, " (", SupplierCapacity(s), ")")
+  end-do
 end-do
 writeln
 
-writeln("Supply allocations: ")
-forall(w in Candidates) do
-  forall(s in Suppliers, p in Products | getsol(z(w,s,p)) > 0.001) do
-    writeln("  ", w, " -> ", s, ": ", getsol(z(w,s,p)))
+forall(t in Periods) do
+  writeln("Period: ", t)
+  writeln("Supply allocations: ")
+  forall(w in Candidates) do
+    forall(s in Suppliers, p in Products | getsol(z(w,s,p,t)) > 0.001) do
+      writeln("  ", w, " -> ", s, ": ", getsol(z(w,s,p,t)))
+    end-do
   end-do
 end-do
 writeln; writeln
 
-writeln("Setup costs: ", sum(w in Candidates) Setup(w)*y(w).sol)
-writeln("Transportation costs warehouse - customers: ", sum(c in Customers, w in Candidates, p in Products) CostCandidateCustomers(w,c)*x(w,c,p).sol*Demand(c,p))
-writeln("Transportation costs suppliers - warehouse: ", sum(w in Candidates, s in Suppliers, p in Products) CostCandidateSupplier(w,s)*z(w,s,p).sol)
+writeln("Setup costs: ", sum(w in Candidates, t in Periods) Setup(w)*y(w,t).sol)
+writeln("Transportation costs warehouse - customers: ", sum(c in Customers, w in Candidates, p in Products, t in Periods) CostCandidateCustomers(w,c)*x(w,c,p,t).sol*DemandPeriods(c,p,t))
+writeln("Transportation costs suppliers - warehouse: ", sum(w in Candidates, s in Suppliers, p in Products, t in Periods) CostCandidateSupplier(w,s)*z(w,s,p,t).sol)
 writeln("Total costs: ", getobjval)
 
 end-model
