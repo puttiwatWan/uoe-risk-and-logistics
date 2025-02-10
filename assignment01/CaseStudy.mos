@@ -156,6 +156,8 @@ forall(j in Candidates, i in Customers)
 ! Variables Decalration
 ! ==================================================================================================
 declarations
+  CanCover: array(Candidates, Customers) of integer
+  
   ! Whether warehouse w covers a demand for product p of customer c
   x: array(Candidates, Customers, Products, Periods) of mpvar
   ! A binary saying whether a warehouse w is setup on period t
@@ -166,6 +168,10 @@ declarations
   ! How many kg a supplier s supplies for warehouse w
   z: array(Candidates, Suppliers, Products, Periods) of mpvar
 end-declarations
+
+initializations from "cluster_vector.txt"
+  CanCover
+end-initializations
 
 ! ==================================================================================================
 ! Constraints
@@ -198,7 +204,7 @@ forall(s in Suppliers, t in Periods) do
 end-do
 
 ! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
-forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Customers) DemandPeriods(c,p,t) * x(w,c,p,t)
+forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Customers) DemandPeriods(c,p,t) * CanCover(w,c) * x(w,c,p,t)
 
 ! Each warehouse has its own capacity
 ! Limit the warehouse capacity by suppliers
