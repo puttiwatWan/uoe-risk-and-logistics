@@ -156,6 +156,7 @@ forall(j in Candidates, i in Customers)
 ! Variables Decalration
 ! ==================================================================================================
 declarations
+  ! A binary shows whether a warehouse w can cover for a customer c. This is a result from clustering.
   CanCover: array(Candidates, Customers) of integer
   
   ! Whether warehouse w covers a demand for product p of customer c
@@ -182,8 +183,8 @@ forall(w in Candidates, t in Periods) do
 end-do
 forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) is_binary
 
-! A customer c can be covered by a warehouse w if and only if that warehosue is open
-forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= o(w,t)
+! A customer c can be covered by a warehouse w if and only if that warehosue is open and can cover for that customer
+forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= o(w,t) * CanCover(w,c)
 
 ! A customer c should be covered by only one warehouse w
 forall(c in Customers, p in Products, t in Periods) sum(w in Candidates) x(w,c,p,t) = 1
@@ -240,20 +241,21 @@ writeln("Optimization Done")
 ! Results
 ! ==================================================================================================
 write("Selected Locations: ")
-forall(w in Candidates, t in Periods | getsol(y(w,t)) > 0.001)
-  write(w, " in period ", t)
-writeln; writeln
+forall(t in Periods) do
+  forall(w in Candidates | getsol(y(w,t)) > 0.001)
+    writeln(w, " in period ", t)
+end-do
+writeln
 
 forall(t in Periods) do
   writeln("Period: ", t)
-  writeln("Warehouse utilization: ", sum(c in Customers, p in Products) Demand(c,p))
+  writeln("Warehouse utilization: ", sum(c in Customers, p in Products) DemandPeriods(c,p,t))
   forall(w in Candidates, p in Products | getsol(y(w,t)) > 0.001) do
     foo := sum(c in Customers) DemandPeriods(c,p,t) * getsol(x(w,c,p,t))
     writeln("  ", w, " ", "p: ", foo)
   end-do
 end-do
 writeln
-
 
 forall(t in Periods) do
   writeln("Period: ", t)
