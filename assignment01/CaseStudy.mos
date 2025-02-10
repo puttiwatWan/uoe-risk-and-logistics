@@ -4,7 +4,7 @@ model "The 3-Echelon Multi-period Warehouse Location Problem with Uncertainty"
 ! ============================================================================
 ! Reading problem parameters
 ! ============================================================================
-filename := "CaseStudyData.txt"; 
+filename := "CaseStudyData.txt";
 ! filename := "CaseStudyData_80_40.txt";
 
 declarations
@@ -26,7 +26,7 @@ end-declarations
 
 ! Read the various numbers from the file
 initializations from filename
-  nbCustomers nbCandidates nbSuppliers nbProductGroups nbVehicleTypes 
+  nbCustomers nbCandidates nbSuppliers nbProductGroups nbVehicleTypes
   nbPeriods nbScenarios
 end-initializations
 
@@ -45,7 +45,7 @@ declarations
   Periods = 1..nbPeriods
   ! Set of scenarios
   Scenarios = 1..nbScenarios
-  
+
   ! Vector of customer ids
   CustomerId: array(Customers) of string
   ! Vectors of customer coordinates
@@ -58,13 +58,13 @@ declarations
   DemandPeriods: array(Customers, Products, Periods) of integer
   ! The annual customer demand in kilograms per product group, period, and scenario
   DemandPeriodScenarios: array(Customers, Products, Periods, Scenarios) of integer
-  
+
   ! Vector of candidate ids
   CandidateId: array(Candidates) of string
   ! Vectors of candidate coordinates
   CandidateEasting: array(Candidates) of real
   CandidateNorthing: array(Candidates) of real
-  
+
   ! Vector of supplier ids
   SupplierId: array(Suppliers) of integer
   ! Vectors of supplier coordinates
@@ -76,14 +76,14 @@ declarations
   SupplierCapacity: array(Suppliers) of real
   ! Vector of supplier vehicle types
   SupplierVehicleType: array(Suppliers) of integer
-  
+
   ! Setup costs for warehouses
   Setup: array(Candidates) of integer
   ! Operating costs for warehouses
   Operating: array(Candidates) of integer
   ! Capacity for warehouses
   Capacity: array(Candidates) of integer
-  
+
   ! Distance matrix between candidate locations and customers
   DistanceCandidateCustomer: array(Candidates,Customers) of real
   ! Distance matrix between candidate locations and suppliers
@@ -93,7 +93,7 @@ declarations
   ! Matrix of transportation costs between candidate locations and suppliers
   CostCandidateSupplier: array(Candidates,Suppliers) of real
 
-  ! Vehicle related data. The vehicles are indexed 1, 2, and 3, where 1 stands 
+  ! Vehicle related data. The vehicles are indexed 1, 2, and 3, where 1 stands
   ! for 18t trucks, 2 for 7.5t lorries, and 3 for 3.5t vans.
   ! The vehicle capacity in tonnes
   VehicleCapacity: array(Vehicles) of real
@@ -104,6 +104,15 @@ declarations
   ! The CO2 emission in kilograms per mile and tonne transported
   VehicleCO2PerMileAndTonne: array(Vehicles) of real
 end-declarations
+
+declarations
+  ! A binary shows whether a warehouse w can cover for a customer c. This is a result from clustering.
+  CanCover: array(Candidates, Customers) of integer
+end-declarations
+
+initializations from "cluster_vector.txt"
+  CanCover
+end-initializations
 
 ! Read data
 initializations from filename
@@ -124,7 +133,7 @@ end-initializations
 ! Data preparation
 ! ==================================================================================================
 
-! Transports between suppliers and locations use either 7.5t or 18t trucks, depending on the 
+! Transports between suppliers and locations use either 7.5t or 18t trucks, depending on the
 ! vehicle type. Make sure to convert from tonne to kilogram.
 ! --------------------------------------------------------------------------------------------------
 forall(j in Candidates, k in Suppliers) do
@@ -144,7 +153,7 @@ forall(j in Candidates, i in Customers)
 ! To write data to csv if you want anything in python
 ! initializations to "mmsheet.csv:Demand.csv"
 !   Demand as 'skiph+;[A:C](Customer,Product,Demand)'
-! end-initializations 
+! end-initializations
 ! initializations to "mmsheet.csv:DemandPeriods.csv"
 ! DemandPeriods as 'skiph+;[A:D](Customer,Product,Period,Demand)'
 ! end-initializations
@@ -163,7 +172,7 @@ declarations
 
   ! How many kg a supplier s supplies for warehouse w
   z: array(Candidates, Suppliers, Products) of mpvar
-  
+
   FixedVehicleType = 2
   FixedVehicleCap = VehicleCapacity(FixedVehicleType)
 end-declarations
@@ -175,7 +184,7 @@ forall(w in Candidates) y(w) is_binary
 forall(w in Candidates, c in Customers, p in Products) x(w,c,p) is_binary
 
 ! A customer c can be covered by a warehouse w if and only if that warehosue is open
-forall(w in Candidates, c in Customers, p in Products) x(w,c,p) <= y(w)
+forall(w in Candidates, c in Customers, p in Products) x(w,c,p) <= y(w) * CanCover(w,c)
 
 ! A customer c should be covered by only one warehouse w
 forall(c in Customers, p in Products) sum(w in Candidates) x(w,c,p) = 1
@@ -187,14 +196,14 @@ forall(s in Suppliers) do
   forall(p in Products) do
     if (SupplierProductGroup(s) = p) then
       sum(w in Candidates) z(w,s,p) <= SupplierCapacity(s)
-    else 
+    else
       sum(w in Candidates) z(w,s,p) = 0
     end-if
   end-do
 end-do
 
 ! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
-forall(w in Candidates, p in Products) sum(s in Suppliers) z(w,s,p) = sum(c in Customers) Demand(c,p) * x(w,c,p)
+forall(w in Candidates, p in Products) sum(s in Suppliers) z(w,s,p) = sum(c in Customers) Demand(c,p) * CanCover(w,c) * x(w,c,p)
 
 ! Each warehouse has its own capacity
 ! Limit the warehouse capacity by suppliers
@@ -205,15 +214,15 @@ forall(w in Candidates) sum(s in Suppliers, p in Products) z(w,s,p) <= Capacity(
 ! ==================================================================================================
 ! Objective
 ! ==================================================================================================
-obj := sum(w in Candidates) Setup(w) * y(w) + 
-      sum(w in Candidates, c in Customers, p in Products) x(w,c,p) * CostCandidateCustomers(w,c) * Demand(c,p) * 2 + 
+obj := sum(w in Candidates) Setup(w) * y(w) +
+      sum(w in Candidates, c in Customers, p in Products) x(w,c,p) * CostCandidateCustomers(w,c) * Demand(c,p) * 2 +
       sum(w in Candidates, s in Suppliers, p in Products) z(w,s,p) * CostCandidateSupplier(w,s) * 2
 
 ! ==================================================================================================
 ! Optimization
 ! ==================================================================================================
 
-setparam("XPRS_MAXTIME", 60)
+setparam("XPRS_MAXTIME", 600)
 setparam("XPRS_VERBOSE", true)
 minimize(obj)
 
