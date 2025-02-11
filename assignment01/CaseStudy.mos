@@ -164,7 +164,10 @@ declarations
   ! A binary saying whether a warehouse w is setup on period t
   y: array(Candidates, Periods) of mpvar
   ! A binary showing whether a warehouse w is open in period t
-  o: array(Candidates, Periods) of mpvar
+  o: array(Candidates) of mpvar
+
+  ! How many kg a warehouse w send product p to customer c in period t
+  v: array(Candidates, Customers, Products, Periods) of mpvar
 
   ! How many kg a supplier s supplies for warehouse w
   z: array(Candidates, Suppliers, Products, Periods) of mpvar
@@ -174,20 +177,88 @@ initializations from "cluster_vector.txt"
   CanCover
 end-initializations
 
+! ! ==================================================================================================
+! ! Constraints Old Version
+! ! ==================================================================================================
+! forall(w in Candidates, t in Periods) do
+!   y(w,t) is_binary
+!   o(w,t) is_binary
+! end-do
+! forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) is_binary
+
+! ! A customer c can be covered by a warehouse w if and only if that warehosue is open and can cover for that customer
+! forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= o(w,t) * CanCover(w,c)
+
+! ! A customer c should be covered by only one warehouse w
+! forall(c in Customers, p in Products, t in Periods) sum(w in Candidates) x(w,c,p,t) = 1
+
+! ! Amount of supplies for product p sent to warehouse w from supplier s should not exceed the supplier limit
+! ! If the supplier does not provide that product p, there should not be any amount of supply of that product p sent
+! ! (i.e. should be 0)
+! forall(s in Suppliers, t in Periods) do
+!   forall(p in Products) do
+!     if (SupplierProductGroup(s) = p) then
+!       ! if the supplier provides this product type
+!       sum(w in Candidates) z(w,s,p,t) <= SupplierCapacity(s)
+!     else
+!       ! if supplier does not provide this product type
+!       sum(w in Candidates) z(w,s,p,t) = 0
+!     end-if
+!   end-do
+! end-do
+
+! ! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
+! forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Customers) DemandPeriods(c,p,t) * CanCover(w,c) * x(w,c,p,t)
+
+! ! Each warehouse has its own capacity
+! ! Limit the warehouse capacity by suppliers
+! forall(w in Candidates, t in Periods) sum(s in Suppliers, p in Products) z(w,s,p,t) <= Capacity(w)
+! ! Alternatively use customer demands instead to limit the capacity
+! ! forall(w in Candidates, t in Periods) sum(c in Customers, p in Products) Demand(c) * x(w,c,p,t) <= Capacity(w)
+
+! ! If a warehouse w is already setup, it needs to be open for the subsequent period
+! forall(w in Candidates, t in Periods) o(w,t) = sum(t1 in 1..t) y(w,t1)
+
+! ! A warehouse w can be setup only at most once
+! forall(w in Candidates) sum(t in Periods) y(w,t) <= 1
+
+! ! ==================================================================================================
+! ! Objective Old Version
+! ! ==================================================================================================
+! obj := sum(w in Candidates, t in Periods) Setup(w) * y(w,t) + ! setup cost
+!       sum(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) * CostCandidateCustomers(w,c) * DemandPeriods(c,p,t) * 2 + ! customer transportation cost
+!       sum(w in Candidates, s in Suppliers, p in Products, t in Periods) z(w,s,p,t) * CostCandidateSupplier(w,s) * 2 + ! supplier transportation cost
+!       sum(w in Candidates, t in Periods) o(w,t) * Operating(w) ! operating cost per year
+
 ! ==================================================================================================
-! Constraints
+! Constraints New Version
 ! ==================================================================================================
 forall(w in Candidates, t in Periods) do
   y(w,t) is_binary
-  o(w,t) is_binary
+  o(w) is_binary
 end-do
 forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) is_binary
 
+forall(w in Candidates) do
+  forall(t in Periods) do
+    o(w) >= y(w,t)
+    if(t > 1) then
+      y(w,t) >= y(w,t-1)
+    end-if
+  end-do
+end-do
+
 ! A customer c can be covered by a warehouse w if and only if that warehosue is open and can cover for that customer
-forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= o(w,t) * CanCover(w,c)
+forall(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) <= CanCover(w,c) * y(w,t)
 
 ! A customer c should be covered by only one warehouse w
 forall(c in Customers, p in Products, t in Periods) sum(w in Candidates) x(w,c,p,t) = 1
+
+forall(w in Candidates, c in Customers, p in Products, t in Periods) v(w,c,p,t) = DemandPeriods(c,p,t)*CanCover(w,c)* x(w,c,p,t)
+
+forall(w in Candidates, t in Periods) sum(c in Candidates, p in Products) v(w,c,p,t) <= Capacity(w) * y(w,t)
+
+forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Candidates) v(w,c,p,t)
 
 ! Amount of supplies for product p sent to warehouse w from supplier s should not exceed the supplier limit
 ! If the supplier does not provide that product p, there should not be any amount of supply of that product p sent
@@ -204,28 +275,30 @@ forall(s in Suppliers, t in Periods) do
   end-do
 end-do
 
-! A supply for product p to warehouse w shoud be equal to the demand of product p covered by warehouse w
-forall(w in Candidates, p in Products, t in Periods) sum(s in Suppliers) z(w,s,p,t) = sum(c in Customers) DemandPeriods(c,p,t) * CanCover(w,c) * x(w,c,p,t)
+forall(s in Suppliers, t in Periods) do
+  forall(p in Products) do
+    forall(w in Candidates) do
+      if (SupplierProductGroup(s) = p) then
+        ! if the supplier provides this product type
+        z(w,s,p,t) <= SupplierCapacity(s)
+      else
+        ! if supplier does not provide this product type
+        z(w,s,p,t) = 0
+      end-if
+    end-do
 
-! Each warehouse has its own capacity
-! Limit the warehouse capacity by suppliers
-forall(w in Candidates, t in Periods) sum(s in Suppliers, p in Products) z(w,s,p,t) <= Capacity(w)
-! Alternatively use customer demands instead to limit the capacity
-! forall(w in Candidates, t in Periods) sum(c in Customers, p in Products) Demand(c) * x(w,c,p,t) <= Capacity(w)
-
-! If a warehouse w is already setup, it needs to be open for the subsequent period
-forall(w in Candidates, t in Periods) o(w,t) = sum(t1 in 1..t) y(w,t1)
-
-! A warehouse w can be setup only at most once
-forall(w in Candidates) sum(t in Periods) y(w,t) <= 1
+  end-do
+end-do
 
 ! ==================================================================================================
-! Objective
+! Objective New Version
 ! ==================================================================================================
 obj := sum(w in Candidates, t in Periods) Setup(w) * y(w,t) + ! setup cost
       sum(w in Candidates, c in Customers, p in Products, t in Periods) x(w,c,p,t) * CostCandidateCustomers(w,c) * DemandPeriods(c,p,t) * 2 + ! customer transportation cost
       sum(w in Candidates, s in Suppliers, p in Products, t in Periods) z(w,s,p,t) * CostCandidateSupplier(w,s) * 2 + ! supplier transportation cost
-      sum(w in Candidates, t in Periods) o(w,t) * Operating(w) ! operating cost per year
+      sum(w in Candidates, t in Periods) o(w) * Operating(w) ! operating cost per year
+
+
 
 ! ==================================================================================================
 ! Optimization
