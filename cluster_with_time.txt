@@ -1,4 +1,4 @@
-Tue Feb 11 2025 14:36:09 GMT+0000 (Greenwich Mean Time)
+Tue Feb 11 2025 19:24:19 GMT+0000 (Greenwich Mean Time)
 FICO Xpress Mosel 64-bit v6.6.1, FICO Xpress v9.4.2
 (c) Copyright Fair Isaac Corporation 2001-2024. All rights reserved
 Compiling assignment01/CaseStudy.mos to out/CaseStudy.bim with -g
@@ -7,17 +7,17 @@ Compiled successfully
 Running model
 Optimization Started
  
-Reading Problem xprs_7f99b0008010
+Reading Problem xprs_7f8e48008010
 Problem Statistics
      3439064 (      0 spare) rows
     16425640 (      0 spare) structural columns
     31896688 (      0 spare) non-zero elements
 MIP Entity Statistics
      7748840 entities        0 sets        0 set members
-FICO Xpress v9.4.2, Hyper, solve started 14:36:19, Feb 11, 2025
+FICO Xpress v9.4.2, Hyper, solve started 19:24:28, Feb 11, 2025
 Heap usage: 2304MB (peak 2304MB, 70KB system)
-Minimizing MILP xprs_7f99b0008010 using up to 11 threads and up to 18GB memory, with these control settings:
-MAXTIME = 600
+Minimizing MILP xprs_7f8e48008010 using up to 11 threads and up to 18GB memory, with these control settings:
+MAXTIME = 3600
 OUTPUTLOG = 1
 MUTEXCALLBACKS = 0
 TUNERMODE = -1
@@ -26,7 +26,7 @@ Original problem has:
 Presolved problem has:
    1743770 rows      1933320 cols      7500264 elements   1700120 entities
 LP relaxation tightened
-Presolve finished in 53 seconds
+Presolve finished in 54 seconds
 Heap usage: 4755MB (peak 10GB, 70KB system)
 
 Coefficient range                    original                 solved        
@@ -38,7 +38,7 @@ Autoscaling applied Curtis-Reid scaling
 Symmetric problem: generators: 32, support set: 1522
  Number of orbits: 394, largest orbit: 4
  Row orbits: 405, row support: 1565
-Will try to keep branch and bound tree memory usage below 11.2GB
+Will try to keep branch and bound tree memory usage below 12.6GB
 Starting concurrent solve with dual (1 thread) and barrier (10 threads)
 
               Concurrent-Solve,  58s
@@ -65,7 +65,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  19029584.   .0000000 |           factorize     
  D  20710573.   .0000000 |           factorize     
 
-              Concurrent-Solve,  75s
+              Concurrent-Solve,  77s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  22895704.   .0000000 |           factorize     
@@ -89,7 +89,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  56093601.   .0000000 |  B  6.082E+12 -7.589E+11
  D  56754514.   .0000000 |  B  6.082E+12 -7.589E+11
 
-              Concurrent-Solve,  87s
+              Concurrent-Solve,  89s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  57913765.   .0000000 |  B  6.082E+12 -7.589E+11
@@ -113,7 +113,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  66776035.   .0000000 |  B  3.027E+12 -1.279E+11
  D  67161501.   .0000000 |  B  3.027E+12 -1.279E+11
 
-              Concurrent-Solve,  96s
+              Concurrent-Solve,  98s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  67681589.   .0000000 |  B  1.126E+12 -7.116E+10
@@ -137,7 +137,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  77719780.   .0000000 |  B  5.805E+09 -5.499E+09
  D  77867739.   .0000000 |  B  5.805E+09 -5.499E+09
 
-              Concurrent-Solve, 103s
+              Concurrent-Solve, 107s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  78119304.   .0000000 |  B  5.805E+09 -5.499E+09
@@ -161,7 +161,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  82448440.   .0000000 |  B  6.885E+08 -4.905E+08
  D  82651609.   .0000000 |  B  6.885E+08 -4.905E+08
 
-              Concurrent-Solve, 126s
+              Concurrent-Solve, 130s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  82755960.   .0000000 |  B  6.843E+08 -4.320E+08
@@ -185,7 +185,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  85532756.   .0000000 |  B  5.047E+08 -89992756.
  D  85683680.   .0000000 |  B  5.047E+08 -89992756.
 
-              Concurrent-Solve, 145s
+              Concurrent-Solve, 150s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  85800969.   .0000000 |  B  5.047E+08 -89992756.
@@ -209,7 +209,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  87960290.   .0000000 |  B  3.728E+08  27595109.
  D  88187804.   .0000000 |  B  3.627E+08  36066924.
 
-              Concurrent-Solve, 168s
+              Concurrent-Solve, 174s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  88201071.   .0000000 |  B  3.627E+08  36066924.
@@ -233,7 +233,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  90183948.   .0000000 |  B  2.800E+08  64218473.
  D  90262352.   .0000000 |  B  2.800E+08  64218473.
 
-              Concurrent-Solve, 186s
+              Concurrent-Solve, 192s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  90385689.   .0000000 |  B  2.800E+08  64218473.
@@ -257,7 +257,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  91931270.   .0000000 |  B  1.695E+08  91407977.
  D  92035972.   .0000000 |  B  1.550E+08  94679281.
 
-              Concurrent-Solve, 209s
+              Concurrent-Solve, 215s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  92109644.   .0000000 |  B  1.550E+08  94679281.
@@ -281,7 +281,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  93816646.   .0000000 |  B  1.275E+08  1.026E+08
  D  93859401.   .0000000 |  B  1.275E+08  1.026E+08
 
-              Concurrent-Solve, 228s
+              Concurrent-Solve, 234s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  93912297.   .0000000 |  B  1.275E+08  1.026E+08
@@ -305,7 +305,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  94905209.   .0000000 |  B  1.125E+08  1.054E+08
  D  94980861.   .0000000 |  B  1.103E+08  1.056E+08
 
-              Concurrent-Solve, 246s
+              Concurrent-Solve, 253s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  95016479.   .0000000 |  B  1.103E+08  1.056E+08
@@ -329,7 +329,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  95663996.   .0000000 |  B  1.067E+08  1.065E+08
  D  95712496.   .0000000 |  B  1.067E+08  1.065E+08
 
-              Concurrent-Solve, 264s
+              Concurrent-Solve, 271s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  95767587.   .0000000 |  B  1.067E+08  1.065E+08
@@ -353,7 +353,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  96510547.   .0000000 |  B  1.067E+08  1.065E+08
  D  96542647.   .0000000 |  B  1.066E+08  1.066E+08
 
-              Concurrent-Solve, 279s
+              Concurrent-Solve, 286s
             Dual                      Barrier      
     objective   dual inf        p.obj.     d.obj.  
  D  96565295.   .0000000 |  B  1.066E+08  1.066E+08
@@ -377,7 +377,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  97442468.   .0000000 |           crossover     
  D  97489076.   .0000000 |           crossover     
 
-              Concurrent-Solve, 295s
+              Concurrent-Solve, 303s
             Dual                      Barrier      
     objective   dual inf       objective   sum inf 
  D  97528941.   .0000000 |           crossover     
@@ -401,7 +401,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  97998061.   .0000000 |           crossover     
  D  98038789.   .0000000 |           crossover     
 
-              Concurrent-Solve, 312s
+              Concurrent-Solve, 319s
             Dual                      Barrier      
     objective   dual inf       objective   sum inf 
  D  98057906.   .0000000 |           crossover     
@@ -425,7 +425,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  98435363.   .0000000 |           crossover     
  D  98443832.   .0000000 |           crossover     
 
-              Concurrent-Solve, 327s
+              Concurrent-Solve, 335s
             Dual                      Barrier      
     objective   dual inf       objective   sum inf 
  D  98480918.   .0000000 |           crossover     
@@ -449,7 +449,7 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  98829886.   .0000000 |           crossover     
  D  98832928.   .0000000 |           crossover     
 
-              Concurrent-Solve, 342s
+              Concurrent-Solve, 350s
             Dual                      Barrier      
     objective   dual inf       objective   sum inf 
  D  98850510.   .0000000 |           crossover     
@@ -461,16 +461,16 @@ Starting concurrent solve with dual (1 thread) and barrier (10 threads)
  D  98935782.   .0000000 |           crossover     
 ----- interrupted ------ | ------- optimal --------
 Concurrent statistics:
-           Dual: 760369 simplex iterations, 291.73s
-        Barrier: 79 barrier and 1335947 simplex iterations, 172.44s
+           Dual: 760369 simplex iterations, 299.85s
+        Barrier: 79 barrier and 1335947 simplex iterations, 174.62s
             Barrier used 10 threads 10 cores
             Barrier used SSE2 support, crossover used 8 threads
 Optimal solution found
  
    Its         Obj Value      S   Ninf  Nneg        Sum Inf  Time
-     0       106608228.4      P      0     0        .000000   349
+     0       106608228.4      P      0     0        .000000   358
 Barrier solved problem
-  79 barrier and 1335947 simplex iterations in 292.79 seconds at time 349
+  79 barrier and 1335947 simplex iterations in 300.96 seconds at time 358
 
 Final objective                       : 1.066082283567254e+08
   Max primal violation      (abs/rel) : 4.547e-13 / 4.547e-13
@@ -481,27 +481,44 @@ Starting root cutting & heuristics
 Deterministic mode with up to 1 additional thread
  
  Its Type    BestSoln    BestBound   Sols    Add    Del     Gap     GInf   Time
-Heuristic s running ( 20715 LP iterations in    2.5 seconds)
+Heuristic s running ( 20715 LP iterations in    2.6 seconds)
 Heuristic t running ( 20108 LP iterations in    3.0 seconds)
 Heuristic t running ( 40515 LP iterations in    5.1 seconds)
-Heuristic t running ( 60780 LP iterations in    9.9 seconds)
-Heuristic t running ( 81065 LP iterations in   15.8 seconds)
-Heuristic t running (101687 LP iterations in   21.3 seconds)
-Heuristic t running (122201 LP iterations in   25.6 seconds)
-Heuristic t running (142421 LP iterations in   29.9 seconds)
-R         118486679.3  108241824.7      1                  8.65%       0   1059
-STOPPING - MAXTIME limit reached (TIMELIMIT=600.00  time=1059.00).
-   1  K   118486679.3  108241824.7      1    605      0    8.65%    7708   1060
- 
-Cuts in the matrix         : 605
-Cut elements in the matrix : 1311816
- *** Search unfinished ***    Time:  1060.46 Nodes:          0
-Final MIP objective                   : 1.184866793302564e+08
-Final MIP bound                       : 1.082418247305594e+08
-  Solution time / primaldual integral :   1060.46s/ 99.936541%
-  Number of solutions found / nodes   :         1 /         0
-  Max primal violation      (abs/rel) : 2.740e-09 / 2.740e-09
-  Max integer violation     (abs    ) : 1.070e-13
+Heuristic t running ( 60780 LP iterations in   10.0 seconds)
+Heuristic t running ( 81065 LP iterations in   16.1 seconds)
+Heuristic t running (101687 LP iterations in   21.6 seconds)
+Heuristic t running (122201 LP iterations in   26.0 seconds)
+Heuristic t running (142421 LP iterations in   30.2 seconds)
+R         118486679.3  108241824.7      1                  8.65%       0   1092
+R         118465452.3  108241824.7      2                  8.63%       0   1093
+R         118464300.3  108241824.7      3                  8.63%       0   1093
+R         118300150.4  108241824.7      4                  8.50%       0   1094
+Heuristic R running (50000 LP iterations in    7.9 seconds)
+   1  K   118300150.4  108241824.7      4    605      0    8.50%    7708   1096
+   2  K   118300150.4  108263132.9      4    353    582    8.48%   11660   1285
+   3  K   118300150.4  108268773.5      4    254    330    8.48%   11860   1447
+   4  K   118300150.4  108270304.6      4     70    245    8.48%   11874   1659
+   5  K   118300150.4  108276602.4      4    238     57    8.47%   14043   1791
+   6  K   118300150.4  108287063.4      4     58     63    8.46%   14507   1899
+   7  K   118300150.4  108293968.8      4     90     94    8.46%    9173   2146
+   8  K   118300150.4  108300873.3      4    118     85    8.45%   18164   2215
+   9  K   118300150.4  108313256.4      4    115    122    8.44%   18106   2330
+  10  K   118300150.4  108324744.3      4    102    110    8.43%   18212   2509
+  11  K   118300150.4  108332806.0      4     69    101    8.43%   18301   2594
+  12  K   118300150.4  108336289.8      4     79     64    8.42%   18172   2649
+  13  K   118300150.4  108340524.6      4     94     76    8.42%   12599   2717
+  14  K   118300150.4  108346951.4      4     85     96    8.41%   17877   2782
+  15  K   118300150.4  108349098.4      4    124    195    8.41%   17730   2836
+  16  G   118300150.4  108362323.8      4     94      7    8.40%   17791   3163
+  17  G   118300150.4  108412341.8      4    334     96    8.36%   17841   3345
+STOPPING - MAXTIME limit reached (TIMELIMIT=3600.00  time=3600.00).
+ *** Search unfinished ***    Time:  3600.42 Nodes:          0
+Final MIP objective                   : 1.183001503582645e+08
+Final MIP bound                       : 1.084123418433767e+08
+  Solution time / primaldual integral :   3600.42s/ 36.232670%
+  Number of solutions found / nodes   :         4 /         0
+  Max primal violation      (abs/rel) : 1.296e-10 / 1.296e-10
+  Max integer violation     (abs    ) : 4.641e-14
 Optimization Done
 Selected Locations: 19 in period 1
 48 in period 1
@@ -770,38 +787,38 @@ Warehouse utilization: 30091851
   19 p: 295288
   19 p: 2574905
   19 p: 334641
-  48 p: 681624
-  48 p: 485666
-  48 p: 5475381
+  48 p: 650138
+  48 p: 460065
+  48 p: 5551140
   48 p: 839714
   132 p: 113988
-  132 p: 679611
+  132 p: 705212
   132 p: 643855
   132 p: 82395
   239 p: 27393
   239 p: 17642
   239 p: 147010
   239 p: 18260
-  315 p: 846239
-  315 p: 607255
-  315 p: 4891423
-  315 p: 753227
-  339 p: 1003542
+  315 p: 811293
+  315 p: 581825
+  315 p: 4755876
+  315 p: 746687
+  339 p: 1035028
   339 p: 8542
-  339 p: 4513856
+  339 p: 4438097
   339 p: 409869
   349 p: 45231
   349 p: 29468
   349 p: 267750
   349 p: 29555
-  398 p: 142235
-  398 p: 117375
-  398 p: 578397
-  398 p: 92476
-  400 p: 167980
-  400 p: 140952
-  400 p: 693419
-  400 p: 125742
+  398 p: 344121
+  398 p: 283429
+  398 p: 1401791
+  398 p: 224334
+  400 p: 1040
+  400 p: 328
+  400 p: 5572
+  400 p: 424
   411 p: 197757
   411 p: 147351
   411 p: 1283270
@@ -829,9 +846,9 @@ Warehouse utilization: 34399428
   239 p: 165765
   239 p: 21464
   315 p: 823352
-  315 p: 550058
+  315 p: 600745
   315 p: 4921563
-  315 p: 760250
+  315 p: 774144
   339 p: 1142990
   339 p: 10171
   339 p: 4846209
@@ -840,14 +857,14 @@ Warehouse utilization: 34399428
   349 p: 32837
   349 p: 308369
   349 p: 34017
-  398 p: 340865
-  398 p: 305205
-  398 p: 1516788
-  398 p: 248474
-  400 p: 160378
-  400 p: 120453
-  400 p: 624817
-  400 p: 108817
+  398 p: 500196
+  398 p: 374591
+  398 p: 2134947
+  398 p: 342890
+  400 p: 1047
+  400 p: 380
+  400 p: 6658
+  400 p: 507
   411 p: 227951
   411 p: 167765
   411 p: 1467988
@@ -874,10 +891,10 @@ Warehouse utilization: 38784962
   239 p: 23112
   239 p: 188335
   239 p: 24009
-  315 p: 595999
-  315 p: 660120
-  315 p: 4950664
-  315 p: 814218
+  315 p: 857834
+  315 p: 652897
+  315 p: 4767484
+  315 p: 841437
   339 p: 1254736
   339 p: 12511
   339 p: 4784001
@@ -886,14 +903,14 @@ Warehouse utilization: 38784962
   349 p: 37476
   349 p: 339405
   349 p: 38459
-  398 p: 615315
-  398 p: 307947
-  398 p: 2292027
-  398 p: 327292
-  400 p: 280721
-  400 p: 141112
-  400 p: 758314
-  400 p: 122319
+  398 p: 538729
+  398 p: 448785
+  398 p: 3226107
+  398 p: 421825
+  400 p: 95472
+  400 p: 7497
+  400 p: 7414
+  400 p: 567
   411 p: 257249
   411 p: 187402
   411 p: 1640650
@@ -906,11 +923,11 @@ Warehouse utilization: 43058834
   19 p: 475884
   47 p: 137095
   47 p: 558688
-  47 p: 3979481
+  47 p: 4033226
   47 p: 735134
   48 p: 1039457
   48 p: 247254
-  48 p: 5587476
+  48 p: 5533731
   48 p: 608537
   132 p: 159124
   132 p: 876572
@@ -920,10 +937,10 @@ Warehouse utilization: 43058834
   239 p: 25634
   239 p: 209795
   239 p: 27058
-  315 p: 361937
-  315 p: 434159
-  315 p: 5350501
-  315 p: 859308
+  315 p: 558872
+  315 p: 475549
+  315 p: 5194255
+  315 p: 890822
   339 p: 1256301
   339 p: 12865
   339 p: 4682956
@@ -932,14 +949,14 @@ Warehouse utilization: 43058834
   349 p: 41489
   349 p: 378447
   349 p: 42263
-  398 p: 1040268
-  398 p: 586482
-  398 p: 3121436
-  398 p: 415532
-  400 p: 253540
-  400 p: 207906
-  400 p: 361137
-  400 p: 125116
+  398 p: 1095481
+  398 p: 752534
+  398 p: 3630708
+  398 p: 508527
+  400 p: 1392
+  400 p: 464
+  400 p: 8111
+  400 p: 607
   411 p: 283632
   411 p: 209892
   411 p: 1810021
@@ -1278,31 +1295,31 @@ Supplier utilization: 103343066
 Period: 7
 Supplier utilization: 103343066
   1: 225150 (1708620)
-  2: 1162761 (1410738)
+  2: 1194247 (1410738)
   3: 0 (434234)
   4: 0 (596810)
   5: 0 (233900)
   6: 0 (460456)
   7: 427530 (1583804)
   8: 0 (797146)
-  9: 310215 (1384516)
-  10: 846239 (997482)
-  11: 681624 (1422276)
+  9: 345161 (1384516)
+  10: 811293 (997482)
+  11: 650138 (1422276)
   12: 0 (671280)
   13: 0 (414306)
   14: 0 (471994)
   15: 0 (468590)
-  16: 709079 (895236)
+  16: 734680 (895236)
   17: 0 (363736)
   18: 0 (493898)
   19: 0 (478714)
   20: 0 (564766)
   21: 0 (1060834)
   22: 0 (316008)
-  23: 727150 (1196782)
+  23: 752580 (1196782)
   24: 0 (491730)
   25: 0 (608154)
-  26: 92829 (739040)
+  26: 41798 (739040)
   27: 1000092 (1000092)
   28: 0 (9605496)
   29: 0 (10280412)
@@ -1311,8 +1328,8 @@ Supplier utilization: 103343066
   32: 0 (4971478)
   33: 147010 (915958)
   34: 0 (1289572)
-  35: 4891423 (7478308)
-  36: 6041596 (9400612)
+  35: 4755876 (7478308)
+  36: 6177143 (9400612)
   37: 0 (7255344)
   38: 0 (4513498)
   39: 0 (732354)
@@ -1354,10 +1371,10 @@ Supplier utilization: 103343066
   20: 0 (564766)
   21: 0 (1060834)
   22: 0 (316008)
-  23: 952391 (1196782)
+  23: 901704 (1196782)
   24: 0 (491730)
   25: 0 (608154)
-  26: 175039 (739040)
+  26: 225726 (739040)
   27: 1000092 (1000092)
   28: 0 (9605496)
   29: 0 (10280412)
@@ -1395,8 +1412,8 @@ Supplier utilization: 103343066
   6: 0 (460456)
   7: 551147 (1583804)
   8: 0 (797146)
-  9: 940259 (1384516)
-  10: 595999 (997482)
+  9: 678424 (1384516)
+  10: 857834 (997482)
   11: 939608 (1422276)
   12: 0 (671280)
   13: 0 (414306)
@@ -1409,10 +1426,10 @@ Supplier utilization: 103343066
   20: 0 (564766)
   21: 0 (1060834)
   22: 0 (316008)
-  23: 1043736 (1196782)
+  23: 1050959 (1196782)
   24: 0 (491730)
   25: 0 (608154)
-  26: 414705 (739040)
+  26: 407482 (739040)
   27: 1000092 (1000092)
   28: 0 (9605496)
   29: 0 (10280412)
@@ -1421,8 +1438,8 @@ Supplier utilization: 103343066
   32: 0 (4971478)
   33: 188335 (915958)
   34: 0 (1289572)
-  35: 4950664 (7478308)
-  36: 9182431 (9400612)
+  35: 4767484 (7478308)
+  36: 9365611 (9400612)
   37: 0 (7255344)
   38: 0 (4513498)
   39: 670383 (732354)
@@ -1450,8 +1467,8 @@ Supplier utilization: 103343066
   6: 0 (460456)
   7: 609439 (1583804)
   8: 0 (797146)
-  9: 1362605 (1384516)
-  10: 361937 (997482)
+  9: 1165670 (1384516)
+  10: 558872 (997482)
   11: 1176552 (1422276)
   12: 0 (671280)
   13: 0 (414306)
@@ -1462,21 +1479,21 @@ Supplier utilization: 103343066
   18: 0 (493898)
   19: 0 (478714)
   20: 0 (564766)
-  21: 270674 (1060834)
+  21: 229284 (1060834)
   22: 0 (316008)
   23: 1196782 (1196782)
   24: 0 (491730)
   25: 0 (608154)
-  26: 252874 (739040)
+  26: 294264 (739040)
   27: 1000092 (1000092)
   28: 0 (9605496)
   29: 0 (10280412)
-  30: 15169258 (15330228)
+  30: 15325504 (15330228)
   31: 0 (1271494)
   32: 0 (4971478)
   33: 209795 (915958)
   34: 0 (1289572)
-  35: 5350501 (7478308)
+  35: 5194255 (7478308)
   36: 9400612 (9400612)
   37: 0 (7255344)
   38: 0 (4513498)
@@ -1489,11 +1506,11 @@ Supplier utilization: 103343066
   45: 0 (623314)
   46: 475884 (789314)
   47: 0 (969148)
-  48: 251235 (768158)
+  48: 249036 (768158)
   49: 0 (425578)
   50: 0 (647726)
   51: 0 (476844)
-  52: 862088 (981354)
+  52: 864287 (981354)
   53: 0 (284804)
 
 Period: 1
@@ -1683,41 +1700,41 @@ Supply allocations:
   19 -> 23: 295288
   19 -> 36: 2574905
   19 -> 46: 334641
-  48 -> 11: 681624
-  48 -> 26: 92829
-  48 -> 27: 392837
-  48 -> 30: 5475381
+  48 -> 11: 650138
+  48 -> 26: 41798
+  48 -> 27: 418267
+  48 -> 30: 5551140
   48 -> 40: 839714
   132 -> 2: 113988
-  132 -> 16: 679611
+  132 -> 16: 705212
   132 -> 36: 643855
   132 -> 43: 82395
   239 -> 1: 27393
   239 -> 23: 17642
   239 -> 33: 147010
   239 -> 48: 18260
-  315 -> 10: 846239
-  315 -> 27: 607255
-  315 -> 35: 4891423
-  315 -> 43: 167317
+  315 -> 10: 811293
+  315 -> 27: 581825
+  315 -> 35: 4755876
+  315 -> 43: 160777
   315 -> 52: 585910
-  339 -> 2: 1003542
+  339 -> 2: 1035028
   339 -> 23: 8542
-  339 -> 30: 4513856
+  339 -> 30: 4438097
   339 -> 40: 72472
   339 -> 43: 337397
   349 -> 2: 45231
   349 -> 16: 29468
   349 -> 36: 267750
   349 -> 43: 29555
-  398 -> 9: 142235
-  398 -> 23: 117375
-  398 -> 36: 578397
-  398 -> 43: 92476
-  400 -> 9: 167980
-  400 -> 23: 140952
-  400 -> 36: 693419
-  400 -> 43: 125742
+  398 -> 9: 344121
+  398 -> 23: 283429
+  398 -> 36: 1401791
+  398 -> 43: 224334
+  400 -> 9: 1040
+  400 -> 23: 328
+  400 -> 36: 5572
+  400 -> 43: 424
   411 -> 1: 197757
   411 -> 23: 147351
   411 -> 36: 1283270
@@ -1729,12 +1746,12 @@ Supply allocations:
   19 -> 36: 2952900
   19 -> 46: 378400
   47 -> 11: 109744
-  47 -> 26: 175039
-  47 -> 27: 13006
+  47 -> 26: 188045
   47 -> 30: 669579
   47 -> 39: 207460
   48 -> 11: 690777
-  48 -> 27: 437028
+  48 -> 26: 37681
+  48 -> 27: 399347
   48 -> 30: 5612757
   48 -> 40: 769242
   132 -> 2: 125679
@@ -1746,9 +1763,9 @@ Supply allocations:
   239 -> 33: 165765
   239 -> 48: 21464
   315 -> 10: 823352
-  315 -> 27: 550058
+  315 -> 27: 600745
   315 -> 35: 4921563
-  315 -> 43: 46461
+  315 -> 43: 60355
   315 -> 52: 713789
   339 -> 2: 1142990
   339 -> 23: 10171
@@ -1759,14 +1776,14 @@ Supply allocations:
   349 -> 16: 32837
   349 -> 36: 308369
   349 -> 43: 34017
-  398 -> 9: 340865
-  398 -> 23: 305205
-  398 -> 36: 1516788
-  398 -> 43: 248474
-  400 -> 9: 160378
-  400 -> 23: 120453
-  400 -> 36: 624817
-  400 -> 43: 108817
+  398 -> 9: 500196
+  398 -> 23: 374591
+  398 -> 36: 2134947
+  398 -> 43: 342890
+  400 -> 9: 1047
+  400 -> 23: 380
+  400 -> 36: 6658
+  400 -> 43: 507
   411 -> 1: 227951
   411 -> 23: 167765
   411 -> 36: 1467988
@@ -1782,8 +1799,8 @@ Supply allocations:
   47 -> 30: 2311990
   47 -> 39: 670383
   48 -> 11: 816993
-  48 -> 26: 154812
-  48 -> 27: 339972
+  48 -> 26: 147589
+  48 -> 27: 347195
   48 -> 30: 5722435
   48 -> 40: 478562
   132 -> 2: 98076
@@ -1795,10 +1812,10 @@ Supply allocations:
   239 -> 23: 23112
   239 -> 33: 188335
   239 -> 48: 24009
-  315 -> 10: 595999
-  315 -> 27: 660120
-  315 -> 35: 4950664
-  315 -> 43: 218198
+  315 -> 10: 857834
+  315 -> 27: 652897
+  315 -> 35: 4767484
+  315 -> 43: 245417
   315 -> 52: 596020
   339 -> 2: 1254736
   339 -> 23: 12511
@@ -1809,14 +1826,14 @@ Supply allocations:
   349 -> 16: 37476
   349 -> 36: 339405
   349 -> 43: 38459
-  398 -> 9: 615315
-  398 -> 23: 307947
-  398 -> 36: 2292027
-  398 -> 43: 327292
-  400 -> 9: 280721
-  400 -> 23: 141112
-  400 -> 36: 758314
-  400 -> 43: 122319
+  398 -> 9: 538729
+  398 -> 23: 448785
+  398 -> 36: 3226107
+  398 -> 43: 421825
+  400 -> 9: 95472
+  400 -> 23: 7497
+  400 -> 36: 7414
+  400 -> 43: 567
   411 -> 1: 257249
   411 -> 23: 187402
   411 -> 36: 1640650
@@ -1824,34 +1841,35 @@ Supply allocations:
 Period: 10
 Supply allocations: 
   19 -> 7: 609439
-  19 -> 16: 247849
-  19 -> 23: 166868
+  19 -> 16: 206459
+  19 -> 23: 208258
   19 -> 36: 3746478
   19 -> 46: 475884
   47 -> 11: 137095
-  47 -> 26: 252874
-  47 -> 27: 305814
-  47 -> 30: 3979481
+  47 -> 26: 294264
+  47 -> 27: 264424
+  47 -> 30: 4033226
   47 -> 39: 732354
-  47 -> 52: 2780
+  47 -> 43: 2780
   48 -> 11: 1039457
   48 -> 27: 247254
-  48 -> 30: 5587476
+  48 -> 30: 5533731
   48 -> 40: 608537
   132 -> 2: 90327
   132 -> 9: 68797
-  132 -> 16: 605898
-  132 -> 21: 270674
+  132 -> 16: 647288
+  132 -> 21: 229284
   132 -> 36: 902438
   132 -> 43: 116040
   239 -> 1: 39478
   239 -> 23: 25634
   239 -> 33: 209795
   239 -> 48: 27058
-  315 -> 10: 361937
-  315 -> 27: 434159
-  315 -> 35: 5350501
-  315 -> 52: 859308
+  315 -> 10: 558872
+  315 -> 27: 475549
+  315 -> 35: 5194255
+  315 -> 43: 26535
+  315 -> 52: 864287
   339 -> 2: 1256301
   339 -> 27: 12865
   339 -> 30: 4682956
@@ -1861,25 +1879,24 @@ Supply allocations:
   349 -> 16: 41489
   349 -> 36: 378447
   349 -> 43: 42263
-  398 -> 9: 1040268
-  398 -> 23: 586482
-  398 -> 36: 3121436
-  398 -> 43: 415532
-  400 -> 9: 253540
-  400 -> 23: 207906
-  400 -> 36: 361137
-  400 -> 43: 122917
-  400 -> 48: 2199
+  398 -> 9: 1095481
+  398 -> 23: 752534
+  398 -> 36: 3630708
+  398 -> 43: 508527
+  400 -> 9: 1392
+  400 -> 23: 464
+  400 -> 36: 8111
+  400 -> 43: 607
   411 -> 1: 283632
   411 -> 23: 209892
-  411 -> 30: 919345
-  411 -> 36: 890676
+  411 -> 30: 1075591
+  411 -> 36: 734430
   411 -> 48: 221978
 
 
 Setup costs: 60820000
-Transportation costs warehouse - customers: 19724237.21
-Transportation costs suppliers - warehouse: 5069102.454
-Total costs: 118486679.3
+Transportation costs warehouse - customers: 19635117.02
+Transportation costs suppliers - warehouse: 5064958.164
+Total costs: 118300150.4
 
 Process exited with code: 0
