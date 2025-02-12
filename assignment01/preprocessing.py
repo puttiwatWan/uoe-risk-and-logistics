@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import read_data as rdt
+from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
 from k_means_constrained import KMeansConstrained
 
@@ -144,3 +145,19 @@ def agg_dem_cus_period_scene(demand_cus_period_scene_df:pd.DataFrame, customer_d
     df_group = df.groupby(['Cluster','ProductIndex','PeriodIndex']).sum()
 
     return df_group
+
+def create_dis_mat_df(depart_df:pd.DataFrame, arrive_df:pd.DataFrame, method: 'cityblock'):
+    # Assuming warehouse_df and customer_df have columns ['x', 'y']
+    depart_coords = depart_df[['CandidateEasting', 'CandidateNorthing']].values
+    arrive_coords = arrive_df[['CustomerEasting', 'CustomerNorthing']].values
+
+    # Compute Euclidean distance matrix
+    distance_matrix = cdist(depart_coords, arrive_coords, metric=method)/1000
+    # display(distance_matrix)
+    # Convert to a Pandas DataFrame for better readability
+    distance_df = pd.DataFrame(distance_matrix, 
+                            index=depart_df.index, 
+                            columns=arrive_df.index)
+    
+    return distance_df
+
