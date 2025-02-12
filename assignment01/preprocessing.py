@@ -76,6 +76,8 @@ def read_and_prep_data()->tuple:
     vehicle_df = pd.DataFrame(      {   'VehicleCapacity':VehicleCapacity, 'VehicleCostPerMileOverall':VehicleCostPerMileOverall, 
                                         'VehicleCostPerMileAndTonneOverall':VehicleCostPerMileAndTonneOverall, 'VehicleCO2PerMileAndTonne':VehicleCO2PerMileAndTonne})
 
+    supplier_df['SupplierVehicleType'] -= 1
+    
     demand_cus_period_df = pd.DataFrame(CustomerDemandPeriods).T
     demand_cus_period_df.reset_index(inplace=True)
     demand_cus_period_df.drop('level_2', axis = 1, inplace=True)
@@ -161,3 +163,21 @@ def create_dis_mat_df(depart_df:pd.DataFrame, arrive_df:pd.DataFrame, method: 'c
     
     return distance_df
 
+def calculate_cost_from_w_to_cluster(distance_df:pd.DataFrame, vehicle_df:pd.DataFrame):
+    cost_w_to_cluster = distance_df.copy()
+    for w in range(len(distance_df.index)):
+        for c in range(len(distance_df.columns)):
+            cost_w_to_cluster.at[w,c] = 2 * distance_df.at[w,c] * vehicle_df.at[2,'VehicleCostPerMileAndTonneOverall'] / 1000   
+    return cost_w_to_cluster
+
+def calculate_cost_from_w_to_s(distance_df:pd.DataFrame, vehicle_df:pd.DataFrame, supplier_df:pd.DataFrame):
+    cost_w_to_s = distance_df.copy()
+    for w in range(len(distance_df.index)):
+        for s in range(len(distance_df.columns)):
+            if supplier_df.at[s,'SupplierVehicleType'] == 0:
+                cost_w_to_s.at[w,s] = 2 * distance_df.at[w,s] * vehicle_df.at[0,'VehicleCostPerMileAndTonneOverall'] / 1000   
+            elif supplier_df.at[s,'SupplierVehicleType'] == 1:
+                cost_w_to_s.at[w,s] = 2 * distance_df.at[w,s] * vehicle_df.at[1,'VehicleCostPerMileAndTonneOverall'] / 1000   
+            else:
+                pass
+    return cost_w_to_s
