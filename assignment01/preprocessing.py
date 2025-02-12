@@ -77,12 +77,14 @@ def read_and_prep_data()->tuple:
                                         'VehicleCostPerMileAndTonneOverall':VehicleCostPerMileAndTonneOverall, 'VehicleCO2PerMileAndTonne':VehicleCO2PerMileAndTonne})
 
     supplier_df['SupplierVehicleType'] -= 1
-    
+    supplier_df['SupplierProductGroup'] -= 1
+
     demand_cus_period_df = pd.DataFrame(CustomerDemandPeriods).T
     demand_cus_period_df.reset_index(inplace=True)
     demand_cus_period_df.drop('level_2', axis = 1, inplace=True)
     demand_cus_period_df.rename(columns={'level_0':'CustomerIndex', 'level_1':'ProductIndex'}, inplace=True)
     demand_cus_period_df['CustomerIndex'] = demand_cus_period_df['CustomerIndex'] - 1 # set the first index into 0
+    demand_cus_period_df['ProductIndex'] = demand_cus_period_df['ProductIndex'] - 1 # set the first index into 0
     demand_cus_period_df.set_index(['CustomerIndex','ProductIndex'], inplace= True)
 
     demand_cus_period_scene_df = pd.DataFrame(CustomerDemandPeriodScenarios).T
@@ -90,6 +92,8 @@ def read_and_prep_data()->tuple:
     demand_cus_period_scene_df.rename(columns={'level_0':'CustomerIndex', 'level_1':'ProductIndex', 'level_2':'PeriodIndex'}, inplace=True)
     demand_cus_period_scene_df.drop('level_3',axis=1, inplace=True)
     demand_cus_period_scene_df['CustomerIndex'] = demand_cus_period_scene_df['CustomerIndex'] - 1 # set the first index into 0
+    demand_cus_period_scene_df['ProductIndex'] = demand_cus_period_scene_df['ProductIndex'] - 1 # set the first index into 0
+    demand_cus_period_scene_df['PeriodIndex'] = demand_cus_period_scene_df['PeriodIndex'] - 1 # set the first index into 0
     demand_cus_period_scene_df.set_index(['CustomerIndex','ProductIndex','PeriodIndex'], inplace= True)
 
     # Default Distance Matrix before Aggregation
@@ -101,7 +105,7 @@ def read_and_prep_data()->tuple:
 
 def ori_cluster_by_cus_loc(customer_df:pd.DataFrame, n_clusters:int=100, random_state:int=42, n_init:int=10)->tuple:
     df = customer_df.copy()
-    kmeans = KMeans(n_clusters=100, random_state=42, n_init=10)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init=n_init)
     df['Cluster'] = kmeans.fit_predict(customer_df[['CustomerEasting','CustomerNorthing','CustomerPopulation']])    
 
     cluster_center_df = pd.DataFrame(kmeans.cluster_centers_)
