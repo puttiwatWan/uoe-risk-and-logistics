@@ -32,8 +32,8 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
 
     # Output Variables
     x = model.addVariables(W, C, T, Phi, name="x", vartype=xp.binary)
-    y = model.addVariables(W, name="o", vartype=xp.binary)
-    o = model.addVariables(W, T, name="y", vartype=xp.binary)
+    y = model.addVariables(W, name="y", vartype=xp.binary)
+    o = model.addVariables(W, T, name="o", vartype=xp.binary)
     v = model.addVariables(W, C, P, T, Phi, name="v", vartype=xp.continuous)
     z = model.addVariables(W, S, T, name="z", vartype=xp.continuous)
 
@@ -42,8 +42,11 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
     model.addConstraint(o[w, t] >= o[w, t - 1] for w in W for t in T if t != 0)
     model.addConstraint(x[w, c, t, xi] <= o[w, t] for w in W for t in T for c in C for xi in Phi)
 
+    # Limit warehouse capacity >= total covered demand
     model.addConstraint(xp.Sum(v[w, c, p, t, xi] for c in C for p in P) <= candidate_df.loc[w, 'Capacity'] * o[w, t]
                         for w in W for t in T for xi in Phi)
+
+    # A customer needs to be covered by a warehouse
     model.addConstraint(xp.Sum(x[w, c, t, xi] for w in W) == 1 for c in C for t in T for xi in Phi)
 
     model.addConstraint(v[w, c, p, t, xi] >= agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x[w, c, t, xi]
@@ -111,26 +114,33 @@ def main():
      demand_cus_period_scene_df) = pp.read_and_prep_data()
 
     time_limit_s = 3600
-    n_cus_clusters = 10
+    n_cus_clusters = 50
     n_scene_clusters = 3
 
-    print(f'Now running Case N_cluster = {n_cus_clusters}')
+    print(f'Now running Case N_cus_cluster = {n_cus_clusters}')
+    print(f'Now running Case N_scene_cluster = {n_scene_clusters}')
     # Customer Clustering
+    cus_df, clust_center_df = pp.const_cluster_by_cus_loc(cus_df, n_clusters=n_cus_clusters, size_min=1, size_max=20,
+                                                          random_state=42)
     agg_dem_cus_period_scene_df = pp.agg_dem_cus_period_scene(demand_cus_period_scene_df, cus_df)
-    cus_df, clust_center_df = pp.constrained_kmeans_clustering(agg_dem_cus_period_scene_df, n_clusters=n_scene_clusters,
-                                                               size_min=np.floor(
-                                                                   len(agg_dem_cus_period_scene_df.columns) / n_scene_clusters),
-                                                               size_max=len(agg_dem_cus_period_scene_df.columns),
-                                                               random_state=42)
-
     distance_w_to_cluster_df = pp.create_dis_mat_df(cand_df, clust_center_df, 'cityblock')
 
     # Create Cost
     tra_cost_w_to_cluster = pp.calculate_cost_from_w_to_cluster(distance_w_to_cluster_df, vehicle_df)
     tra_cost_w_to_s = pp.calculate_cost_from_w_to_s(distance_w_to_s_df, vehicle_df, sup_df)
 
-    sto_model(agg_dem_cus_period_scene_df, cand_df, sup_df, clust_center_df, tra_cost_w_to_s, tra_cost_w_to_cluster,
-              time_limit_s)
+    # Scenarios Clustering
+    _, scene_cluster_center_df = pp.constrained_kmeans_clustering(agg_dem_cus_period_scene_df,
+                                                                  n_clusters=n_scene_clusters,
+                                                                  size_min=np.floor(
+                                                                      len(agg_dem_cus_period_scene_df.columns) /
+                                                                      n_scene_clusters),
+                                                                  size_max=len(agg_dem_cus_period_scene_df.columns),
+                                                                  random_state=42)
+    agg_dem_cus_period_clus_scene_df = pp.agg_scene_df(agg_dem_cus_period_scene_df, scene_cluster_center_df)
+
+    sto_model(agg_dem_cus_period_clus_scene_df, cand_df, sup_df, clust_center_df, tra_cost_w_to_s,
+              tra_cost_w_to_cluster, time_limit_s)
 
 
 if __name__ == "__main__":
