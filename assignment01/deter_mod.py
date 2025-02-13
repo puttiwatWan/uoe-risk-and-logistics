@@ -33,7 +33,6 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
     x = model.addVariables(W, C, T, name="x", vartype=xp.binary)
     o = model.addVariables(W, T, name="o", vartype=xp.binary)
     y = model.addVariables(W, name="y", vartype=xp.binary)
-    # v = model.addVariables(W, C, P, T, name="v", vartype=xp.continuous)
     z = model.addVariables(W, S, T, name="z", vartype=xp.continuous)
 
     # Constraints
@@ -47,8 +46,6 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
     model.addConstraint(x[w, c, t] <= o[w, t] for w in W for c in C for t in T)
 
     model.addConstraint(xp.Sum(x[w, c, t] for w in W) == 1 for c in C for t in T)
-    # model.addConstraint(v[w, c, p, t] == aggregated_demand_period_df.loc[(c, p), t] * x[w, c, t]
-    #                     for w in W for c in C for t in T for p in P)
     model.addConstraint(xp.Sum(z[w, s, t] for w in W) <= supplier_df.loc[s, 'SupplierCapacity'] for s in S for t in T)
 
     Setup_cost = xp.Sum(candidate_df.loc[w, 'Setup'] * y[w] for w in W)
@@ -58,8 +55,8 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
                           for w in W for c in C for p in P for t in T)
 
     obj = Setup_cost + Operating_cost + Tra_w_s_cost + Tra_w_c_cost
-
     model.setObjective(obj, sense=xp.minimize)
+
     model.setControl('miprelstop', 1e-3)
     model.setControl('maxtime', time_limit_in_sec)
     tic_time = time.time()
@@ -74,7 +71,6 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
     x_sol = model.getSolution(x)
     y_sol = model.getSolution(y)
     o_sol = model.getSolution(o)
-    # v_sol = model.getSolution(v)
     z_sol = model.getSolution(z)
 
     def print_results():
@@ -85,13 +81,17 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
         set_cost_sol = sum(candidate_df.loc[w, 'Setup'] * y_sol[w] for w in W)
         operation_cost_sol = sum(candidate_df.loc[w, 'Operating'] * o_sol[w, t] for w in W for t in T)
         w_s_cost_sol = sum(cost_w_to_s.loc[w, s] * z_sol[w, s, t] for w in W for s in S for t in T)
-        w_c_cost_sol = sum(cost_w_to_cluster.loc[w, c] * aggregated_demand_period_df.loc[(c, p), t] * x[w, c, t]
+        w_c_cost_sol = sum(cost_w_to_cluster.loc[w, c] * aggregated_demand_period_df.loc[(c, p), t] * x_sol[w, c, t]
                            for w in W for c in C for p in P for t in T)
 
         print(f"Setup cost: {set_cost_sol}")
         print(f"Operation cost: {operation_cost_sol}")
         print(f"Transportation from Supplier to Warehouse cost: {w_s_cost_sol}")
         print(f"Transportation from Warehouse to Customer cost: {w_c_cost_sol}")
+
+        for t in T:
+            opened_warehouse = [w for w in W if y_sol[w, t] == 1]
+            print(f"Warehouse open in T: {t} are: {opened_warehouse}")
 
     print_results()
 
