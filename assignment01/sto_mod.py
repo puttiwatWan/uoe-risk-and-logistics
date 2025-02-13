@@ -103,6 +103,10 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
         print(f"Transportation from Supplier to Warehouse cost: {w_s_cost_sol}")
         print(f"Recourse cost: {recourse_sol}")
 
+        for t in T:
+            opened_warehouse = [w for w in W if y_sol[w, t] == 1]
+            print(f"Warehouse open in T: {t} are: {opened_warehouse}")
+
     print_results()
 
     return solve_time, objective_value, mip_gap_percentage, x_sol, y_sol, o_sol, z_sol

@@ -89,6 +89,10 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
         print(f"Transportation from Supplier to Warehouse cost: {w_s_cost_sol}")
         print(f"Transportation from Warehouse to Customer cost: {w_c_cost_sol}")
 
+        for t in T:
+            opened_warehouse = [w for w in W if y_sol[w, t] == 1]
+            print(f"Warehouse open in T: {t} are: {opened_warehouse}")
+
     print_results()
 
     return solve_time, objective_value, mip_gap_percentage, x, y, o, z
