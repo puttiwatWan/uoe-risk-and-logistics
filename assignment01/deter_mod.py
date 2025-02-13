@@ -101,11 +101,11 @@ def main():
      demand_cus_period_scene_df) = pp.read_and_prep_data()
 
     time_limit_s = 3600
-    each_n_clusters = 50
+    n_clusters = 50
 
-    print(f'Now running Case N_cluster = {each_n_clusters}')
+    print(f'Now running Case N_cluster = {n_clusters}')
     # Customer Clustering
-    cus_df, clust_center_df = pp.const_cluster_by_cus_loc(cus_df, n_clusters=each_n_clusters,
+    cus_df, clust_center_df = pp.const_cluster_by_cus_loc(cus_df, n_clusters=n_clusters,
                                                           size_min=1, size_max=20, random_state=42)
 
     agg_dem_cus_period_df = pp.agg_dem_cus_period(demand_cus_period_df, cus_df)
