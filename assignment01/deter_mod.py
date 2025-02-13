@@ -31,8 +31,8 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
 
     # Output Variables
     x = model.addVariables(W, C, T, name="x", vartype=xp.binary)
-    o = model.addVariables(W, T, name="y", vartype=xp.binary)
-    y = model.addVariables(W, name="o", vartype=xp.binary)
+    o = model.addVariables(W, T, name="o", vartype=xp.binary)
+    y = model.addVariables(W, name="y", vartype=xp.binary)
     v = model.addVariables(W, C, P, T, name="v", vartype=xp.continuous)
     z = model.addVariables(W, S, T, name="z", vartype=xp.continuous)
 
