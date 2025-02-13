@@ -304,7 +304,7 @@ obj := sum(w in Candidates, t in Periods) Setup(w) * y(w,t) + ! setup cost
 ! Optimization
 ! ==================================================================================================
 
-setparam("XPRS_MAXTIME", 600)
+setparam("XPRS_MAXTIME", 3600)
 setparam("XPRS_VERBOSE", true)
 writeln("Optimization Started")
 minimize(obj)

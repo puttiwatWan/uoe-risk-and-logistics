@@ -1,0 +1,210 @@
+import pandas as pd
+import numpy as np
+import read_data as rdt
+from scipy.spatial.distance import cdist
+from sklearn.cluster import KMeans
+from k_means_constrained import KMeansConstrained
+
+def dis_mat_from_dict(dis_dict:dict, mat_size: tuple)->pd.DataFrame:
+    # Distance matrix from supplier to warehouse
+    dis_mat = np.zeros(mat_size)
+    j = 0
+    for k,i in dis_dict.items():
+        dis_mat[:,j] = i
+        j+=1
+    dis_mat_df = pd.DataFrame(dis_mat.T)
+
+    return dis_mat_df
+
+    
+def read_and_prep_data()->tuple:
+    dat_dict = rdt.parse_dat_file('CaseStudyData.txt')
+
+    nbCustomers = int(dat_dict['nbCustomers'][0])
+    nbCandidates = int(dat_dict['nbCandidates'][0])
+    nbSuppliers = int(dat_dict['nbSuppliers'][0])
+    nbProductGroups = int(dat_dict['nbProductGroups'][0])
+    nbVehicleTypes = int(dat_dict['nbVehicleTypes'][0])
+    nbPeriods = int(dat_dict['nbPeriods'][0])
+    nbScenarios = int(dat_dict['nbScenarios'][0])
+
+
+    CustomerId = dat_dict['CustomerId']
+    CustomerEasting = dat_dict['CustomerEasting']
+    CustomerNorthing = dat_dict['CustomerNorthing']
+    CustomerPopulation = dat_dict['CustomerPopulation']
+
+    CandidateId = dat_dict['CandidateId']
+    CandidateEasting = dat_dict['CandidateEasting']
+    CandidateNorthing = dat_dict['CandidateNorthing']
+
+    SupplierId = dat_dict['SupplierId']
+    SupplierEasting = dat_dict['SupplierEasting']
+    SupplierNorthing = dat_dict['SupplierNorthing']
+    SupplierProductGroup = dat_dict['SupplierProductGroup']
+    SupplierCapacity = dat_dict['SupplierCapacity']
+    SupplierVehicleType = dat_dict['SupplierVehicleType']
+
+    VehicleCapacity = dat_dict['VehicleCapacity']
+    VehicleCostPerMileOverall = dat_dict['VehicleCostPerMileOverall']
+    VehicleCostPerMileAndTonneOverall = dat_dict['VehicleCostPerMileAndTonneOverall']
+    VehicleCO2PerMileAndTonne = dat_dict['VehicleCO2PerMileAndTonne']
+
+    Setup = dat_dict['Setup']
+    Operating = dat_dict['Operating']
+    Capacity = dat_dict['Capacity']
+
+    CustomerDemand = dat_dict['CustomerDemand']
+    CustomerDemandPeriods = dat_dict['CustomerDemandPeriods']
+    CustomerDemandPeriodScenarios = dat_dict['CustomerDemandPeriodScenarios']
+
+    DistanceCandidateSupplier = dat_dict['DistanceCandidateSupplier']
+    DistanceCandidateCustomer = dat_dict['DistanceCandidateCustomer']
+
+
+
+    # Preprocessed into dataframe
+    customer_df = pd.DataFrame({        'CustomerId': CustomerId, 'CustomerEasting':CustomerEasting,
+                                    'CustomerNorthing':CustomerNorthing, 'CustomerPopulation': CustomerPopulation})
+
+    candidate_df = pd.DataFrame(    {   'CandidateId':CandidateId, 'CandidateEasting':CandidateEasting, 'CandidateNorthing':CandidateNorthing, 'Capacity':Capacity[(1,)],
+                                        'Setup':Setup[(1,)], 'Operating':Operating[(1,)]})
+
+    supplier_df = pd.DataFrame(     {   'SupplierId':SupplierId, 'SupplierEasting':SupplierEasting, 'SupplierNorthing':SupplierNorthing,
+                                        'SupplierProductGroup':SupplierProductGroup, 'SupplierCapacity':SupplierCapacity[(1,)], 'SupplierVehicleType':SupplierVehicleType})
+
+    vehicle_df = pd.DataFrame(      {   'VehicleCapacity':VehicleCapacity, 'VehicleCostPerMileOverall':VehicleCostPerMileOverall, 
+                                        'VehicleCostPerMileAndTonneOverall':VehicleCostPerMileAndTonneOverall, 'VehicleCO2PerMileAndTonne':VehicleCO2PerMileAndTonne})
+
+    supplier_df['SupplierVehicleType'] -= 1
+    supplier_df['SupplierProductGroup'] -= 1
+
+    demand_cus_period_df = pd.DataFrame(CustomerDemandPeriods).T
+    demand_cus_period_df.reset_index(inplace=True)
+    demand_cus_period_df.drop('level_2', axis = 1, inplace=True)
+    demand_cus_period_df.rename(columns={'level_0':'CustomerIndex', 'level_1':'ProductIndex'}, inplace=True)
+    demand_cus_period_df['CustomerIndex'] = demand_cus_period_df['CustomerIndex'] - 1 # set the first index into 0
+    demand_cus_period_df['ProductIndex'] = demand_cus_period_df['ProductIndex'] - 1 # set the first index into 0
+    demand_cus_period_df.set_index(['CustomerIndex','ProductIndex'], inplace= True)
+
+    demand_cus_period_scene_df = pd.DataFrame(CustomerDemandPeriodScenarios).T
+    demand_cus_period_scene_df.reset_index(inplace=True)
+    demand_cus_period_scene_df.rename(columns={'level_0':'CustomerIndex', 'level_1':'ProductIndex', 'level_2':'PeriodIndex'}, inplace=True)
+    demand_cus_period_scene_df.drop('level_3',axis=1, inplace=True)
+    demand_cus_period_scene_df['CustomerIndex'] = demand_cus_period_scene_df['CustomerIndex'] - 1 # set the first index into 0
+    demand_cus_period_scene_df['ProductIndex'] = demand_cus_period_scene_df['ProductIndex'] - 1 # set the first index into 0
+    demand_cus_period_scene_df['PeriodIndex'] = demand_cus_period_scene_df['PeriodIndex'] - 1 # set the first index into 0
+    demand_cus_period_scene_df.set_index(['CustomerIndex','ProductIndex','PeriodIndex'], inplace= True)
+
+    # Default Distance Matrix before Aggregation
+    distance_w_to_s_df = dis_mat_from_dict(DistanceCandidateSupplier, (nbSuppliers, nbCandidates))
+    distance_w_to_c_df = dis_mat_from_dict(DistanceCandidateCustomer, (nbCustomers, nbCandidates))
+
+    return customer_df, candidate_df, supplier_df, vehicle_df, distance_w_to_s_df, distance_w_to_c_df, demand_cus_period_df, demand_cus_period_scene_df
+
+
+def ori_cluster_by_cus_loc(customer_df:pd.DataFrame, n_clusters:int=100, random_state:int=42, n_init:int=10)->tuple:
+    df = customer_df.copy()
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init=n_init)
+    df['Cluster'] = kmeans.fit_predict(customer_df[['CustomerEasting','CustomerNorthing','CustomerPopulation']])    
+
+    cluster_center_df = pd.DataFrame(kmeans.cluster_centers_)
+    cluster_center_df.drop(2,axis = 1, inplace = True)
+    cluster_center_df.reset_index(inplace=True)
+    cluster_center_df.rename(columns = {'index':'Cluster', 0:'CustomerEasting', 1:'CustomerNorthing'}, inplace = True)
+    cluster_center_df.set_index('Cluster',inplace=True)
+
+    return df, cluster_center_df
+
+def const_cluster_by_cus_loc(customer_df:pd.DataFrame, n_clusters:int=100, size_min:int=4, size_max:int=400, random_state:int=42)->tuple:
+    df = customer_df.copy()
+
+    kmeans_constrained = KMeansConstrained(
+                                            n_clusters=n_clusters,
+                                            size_min=size_min,
+                                            size_max=size_max,
+                                            random_state=random_state
+                                        )
+
+    df['Cluster'] = kmeans_constrained.fit_predict(customer_df[['CustomerEasting','CustomerNorthing','CustomerPopulation']])
+
+    cluster_center_df = pd.DataFrame(kmeans_constrained.cluster_centers_)
+    cluster_center_df.drop(2,axis = 1, inplace = True)
+    cluster_center_df.reset_index(inplace=True)
+    cluster_center_df.rename(columns = {'index':'Cluster', 0:'CustomerEasting', 1:'CustomerNorthing'}, inplace = True)
+    cluster_center_df.set_index('Cluster',inplace=True)
+
+    return df, cluster_center_df
+
+def agg_dem_cus_period(demand_cus_period_df:pd.DataFrame, customer_df_with_clus:pd.DataFrame)->pd.DataFrame:
+    df = demand_cus_period_df.copy()
+    df = df.reset_index().merge(customer_df_with_clus.reset_index()[['index','Cluster']], left_on='CustomerIndex', right_on='index', how = 'left')
+    df.drop(['CustomerIndex','index'], axis =1 ,inplace=True)
+    df_group = df.groupby(['Cluster','ProductIndex']).sum()
+
+    return df_group
+
+def agg_dem_cus_period_scene(demand_cus_period_scene_df:pd.DataFrame, customer_df_with_clus:pd.DataFrame)->pd.DataFrame:
+    df = demand_cus_period_scene_df.copy()
+    df = df.reset_index().merge(customer_df_with_clus.reset_index()[['index','Cluster']], left_on='CustomerIndex', right_on='index', how = 'left')
+    df.drop(['CustomerIndex','index'], axis =1 ,inplace=True)
+    df_group = df.groupby(['Cluster','ProductIndex','PeriodIndex']).sum()
+
+    return df_group
+
+def create_dis_mat_df(depart_df:pd.DataFrame, arrive_df:pd.DataFrame, method: 'cityblock'):
+    # Assuming warehouse_df and customer_df have columns ['x', 'y']
+    depart_coords = depart_df[['CandidateEasting', 'CandidateNorthing']].values
+    arrive_coords = arrive_df[['CustomerEasting', 'CustomerNorthing']].values
+
+    # Compute Euclidean distance matrix
+    distance_matrix = cdist(depart_coords, arrive_coords, metric=method)/1000
+    # display(distance_matrix)
+    # Convert to a Pandas DataFrame for better readability
+    distance_df = pd.DataFrame(distance_matrix, 
+                            index=depart_df.index, 
+                            columns=arrive_df.index)
+    
+    return distance_df
+
+def calculate_cost_from_w_to_cluster(distance_df:pd.DataFrame, vehicle_df:pd.DataFrame):
+    cost_w_to_cluster = distance_df.copy()
+    for w in range(len(distance_df.index)):
+        for c in range(len(distance_df.columns)):
+            cost_w_to_cluster.at[w,c] = 2 * distance_df.at[w,c] * vehicle_df.at[2,'VehicleCostPerMileAndTonneOverall'] / 1000   
+    return cost_w_to_cluster
+
+def calculate_cost_from_w_to_s(distance_df:pd.DataFrame, vehicle_df:pd.DataFrame, supplier_df:pd.DataFrame):
+    cost_w_to_s = distance_df.copy()
+    for w in range(len(distance_df.index)):
+        for s in range(len(distance_df.columns)):
+            if supplier_df.at[s,'SupplierVehicleType'] == 0:
+                cost_w_to_s.at[w,s] = 2 * distance_df.at[w,s] * vehicle_df.at[0,'VehicleCostPerMileAndTonneOverall'] / 1000   
+            elif supplier_df.at[s,'SupplierVehicleType'] == 1:
+                cost_w_to_s.at[w,s] = 2 * distance_df.at[w,s] * vehicle_df.at[1,'VehicleCostPerMileAndTonneOverall'] / 1000   
+            else:
+                pass
+    return cost_w_to_s
+
+def constrained_kmeans_clustering(agg_dem_cus_period_scene_df, n_clusters=5, size_min=None, size_max=None, random_state=42):
+    data = agg_dem_cus_period_scene_df.copy()
+    data.reset_index(drop = True, inplace = True)
+    data = data.T
+
+    # Train K-Means Constrained
+    kmeans_constrained = KMeansConstrained(
+                                            n_clusters=n_clusters,
+                                            size_min=size_min,
+                                            size_max=size_max,
+                                            random_state=random_state
+                                        )
+    a = kmeans_constrained.fit(data)
+    cluster_center_df = pd.DataFrame(kmeans_constrained.cluster_centers_)
+    labels = kmeans_constrained.fit_predict(data)  # Get cluster labels
+
+    return labels, cluster_center_df  
+
+def agg_scene_df(agg_dem_cus_period_scene_df:pd.DataFrame, scene_cluster_center_df:pd.DataFrame):
+    output_df = scene_cluster_center_df.T.copy()
+    output_df.index = agg_dem_cus_period_scene_df.index
+    return output_df

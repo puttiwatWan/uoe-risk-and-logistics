@@ -79,10 +79,10 @@ def parse_values(value_str):
         return value_str.split()
 
 
-# Example usage
-file_path = "CaseStudyData.txt"  # Replace with the actual file path
-parsed_data = parse_dat_file(file_path)
+# # Example usage
+# file_path = "CaseStudyData.txt"  # Replace with the actual file path
+# parsed_data = parse_dat_file(file_path)
 
-# Print parsed variables and their indexed values
-for variable, value_dict in parsed_data.items():
-    print(f"{variable}:")
+# # Print parsed variables and their indexed values
+# for variable, value_dict in parsed_data.items():
+#     print(f"{variable}:")
