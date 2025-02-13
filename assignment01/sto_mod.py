@@ -34,7 +34,6 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
     x = model.addVariables(W, C, T, Phi, name="x", vartype=xp.binary)
     y = model.addVariables(W, name="y", vartype=xp.binary)
     o = model.addVariables(W, T, name="o", vartype=xp.binary)
-    v = model.addVariables(W, C, P, T, Phi, name="v", vartype=xp.continuous)
     z = model.addVariables(W, S, T, name="z", vartype=xp.continuous)
 
     # Constraints
@@ -43,16 +42,16 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
     model.addConstraint(x[w, c, t, xi] <= o[w, t] for w in W for t in T for c in C for xi in Phi)
 
     # Limit warehouse capacity >= total covered demand
-    model.addConstraint(xp.Sum(v[w, c, p, t, xi] for c in C for p in P) <= candidate_df.loc[w, 'Capacity'] * o[w, t]
+    model.addConstraint(xp.Sum(agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x[w, c, t, xi]
+                               for c in C for p in P)
+                        <= candidate_df.loc[w, 'Capacity'] * o[w, t]
                         for w in W for t in T for xi in Phi)
 
     # A customer needs to be covered by a warehouse
     model.addConstraint(xp.Sum(x[w, c, t, xi] for w in W) == 1 for c in C for t in T for xi in Phi)
 
-    model.addConstraint(v[w, c, p, t, xi] >= agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x[w, c, t, xi]
-                        for w in W for c in C for p in P for t in T for xi in Phi)
-
-    model.addConstraint(xp.Sum(z[w, s, t] for s in S_P_dict[p]) >= xp.Sum(v[w, c, p, t, xi] for c in C)
+    model.addConstraint(xp.Sum(z[w, s, t] for s in S_P_dict[p]) >=
+                        xp.Sum(agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x[w, c, t, xi] for c in C)
                         for w in W for p in P for t in T for xi in Phi)
 
     model.addConstraint(xp.Sum(z[w, s, t] for w in W) <= supplier_df.loc[s, 'SupplierCapacity'] for s in S for t in T)
@@ -62,7 +61,8 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
     Tra_w_s_cost = xp.Sum(cost_w_to_s.loc[w, s] * z[w, s, t] for w in W for s in S for t in T)
 
     equal_prob = 1 / len(agg_dem_cus_period_clus_scene_df.columns)
-    Recourse = xp.Sum(equal_prob * xp.Sum(cost_w_to_cluster.loc[w, c] * v[w, c, p, t, xi]
+    Recourse = xp.Sum(equal_prob * xp.Sum(cost_w_to_cluster.loc[w, c] *
+                                          agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x[w, c, t, xi]
                                           for w in W for c in C for p in P for t in T)
                       for xi in Phi)
 
@@ -83,7 +83,6 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
     x_sol = model.getSolution(x)
     y_sol = model.getSolution(y)
     o_sol = model.getSolution(o)
-    v_sol = model.getSolution(v)
     z_sol = model.getSolution(z)
 
     def print_results():
@@ -94,9 +93,10 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
         set_cost_sol = sum(candidate_df.loc[w, 'Setup'] * y_sol[w] for w in W)
         operation_cost_sol = sum(candidate_df.loc[w, 'Operating'] * o_sol[w, t] for w in W for t in T)
         w_s_cost_sol = sum(cost_w_to_s.loc[w, s] * z_sol[w, s, t] for w in W for s in S for t in T)
-        recourse_sol = xp.Sum(equal_prob * xp.Sum(cost_w_to_cluster.loc[w, c] * v_sol[w, c, p, t, xi]
-                                                  for w in W for c in C for p in P for t in T)
-                              for xi in Phi)
+        recourse_sol = sum(equal_prob * sum(cost_w_to_cluster.loc[w, c] *
+                                            agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * x_sol[w, c, t, xi]
+                                            for w in W for c in C for p in P for t in T)
+                           for xi in Phi)
 
         print(f"Setup cost: {set_cost_sol}")
         print(f"Operation cost: {operation_cost_sol}")
@@ -105,7 +105,7 @@ def sto_model(agg_dem_cus_period_clus_scene_df: pd.DataFrame,
 
     print_results()
 
-    return solve_time, objective_value, mip_gap_percentage, x_sol, y_sol, o_sol, v_sol, z_sol
+    return solve_time, objective_value, mip_gap_percentage, x_sol, y_sol, o_sol, z_sol
 
 
 def main():
