@@ -31,27 +31,27 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
 
     # Output Variables
     x = model.addVariables(W, C, T, name="x", vartype=xp.binary)
-    y = model.addVariables(W, T, name="y", vartype=xp.binary)
-    o = model.addVariables(W, name="o", vartype=xp.binary)
+    o = model.addVariables(W, T, name="y", vartype=xp.binary)
+    y = model.addVariables(W, name="o", vartype=xp.binary)
     v = model.addVariables(W, C, P, T, name="v", vartype=xp.continuous)
     z = model.addVariables(W, S, T, name="z", vartype=xp.continuous)
 
     # Constraints
-    model.addConstraint(o[w] >= y[w, t] for w in W for t in T)
-    model.addConstraint(xp.Sum(v[w, c, p, t] for c in C for p in P) <= candidate_df.loc[w, 'Capacity'] * y[w, t]
+    model.addConstraint(y[w] >= o[w, t] for w in W for t in T)
+    model.addConstraint(xp.Sum(v[w, c, p, t] for c in C for p in P) <= candidate_df.loc[w, 'Capacity'] * o[w, t]
                         for w in W for t in T)
-    model.addConstraint(y[w, t] >= y[w, t - 1] for w in W for t in T if t != 0)
+    model.addConstraint(o[w, t] >= o[w, t - 1] for w in W for t in T if t != 0)
     model.addConstraint(xp.Sum(z[w, s, t] for s in S_P_dict[p]) == xp.Sum(v[w, c, p, t] for c in C)
                         for w in W for t in T for p in P)
-    model.addConstraint(x[w, c, t] <= y[w, t] for w in W for c in C for t in T)
+    model.addConstraint(x[w, c, t] <= o[w, t] for w in W for c in C for t in T)
 
     model.addConstraint(xp.Sum(x[w, c, t] for w in W) == 1 for c in C for t in T)
     model.addConstraint(v[w, c, p, t] == aggregated_demand_period_df.loc[(c, p), t] * x[w, c, t]
                         for w in W for c in C for t in T for p in P)
     model.addConstraint(xp.Sum(z[w, s, t] for w in W) <= supplier_df.loc[s, 'SupplierCapacity'] for s in S for t in T)
 
-    Setup_cost = xp.Sum(candidate_df.loc[w, 'Setup'] * o[w] for w in W)
-    Operating_cost = xp.Sum(candidate_df.loc[w, 'Operating'] * y[w, t] for w in W for t in T)
+    Setup_cost = xp.Sum(candidate_df.loc[w, 'Setup'] * y[w] for w in W)
+    Operating_cost = xp.Sum(candidate_df.loc[w, 'Operating'] * o[w, t] for w in W for t in T)
     Tra_w_s_cost = xp.Sum(cost_w_to_s.loc[w, s] * z[w, s, t] for w in W for s in S for t in T)
     Tra_w_c_cost = xp.Sum(cost_w_to_cluster.loc[w, c] * v[w, c, p, t] for w in W for c in C for p in P for t in T)
 
@@ -70,8 +70,8 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
     mip_gap_percentage = 100 * (objective_value - model.getAttrib('bestbound')) / objective_value
 
     x_sol = model.getSolution(x)
-    o_sol = model.getSolution(o)
     y_sol = model.getSolution(y)
+    o_sol = model.getSolution(o)
     v_sol = model.getSolution(v)
     z_sol = model.getSolution(z)
 
@@ -80,8 +80,8 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
         print(f'Objective Value: {objective_value}')
         print(f'%Gaps: {mip_gap_percentage}')
 
-        set_cost_sol = sum(candidate_df.loc[w, 'Setup'] * o_sol[w] for w in W)
-        operation_cost_sol = sum(candidate_df.loc[w, 'Operating'] * y_sol[w, t] for w in W for t in T)
+        set_cost_sol = sum(candidate_df.loc[w, 'Setup'] * y_sol[w] for w in W)
+        operation_cost_sol = sum(candidate_df.loc[w, 'Operating'] * o_sol[w, t] for w in W for t in T)
         w_s_cost_sol = sum(cost_w_to_s.loc[w, s] * z_sol[w, s, t] for w in W for s in S for t in T)
         w_c_cost_sol = sum(cost_w_to_cluster.loc[w, c] * v_sol[w, c, p, t] for w in W for c in C for p in P for t in T)
 
