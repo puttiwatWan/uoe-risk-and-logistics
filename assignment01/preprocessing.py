@@ -185,3 +185,26 @@ def calculate_cost_from_w_to_s(distance_df:pd.DataFrame, vehicle_df:pd.DataFrame
             else:
                 pass
     return cost_w_to_s
+
+def constrained_kmeans_clustering(agg_dem_cus_period_scene_df, n_clusters=5, size_min=None, size_max=None, random_state=42):
+    data = agg_dem_cus_period_scene_df.copy()
+    data.reset_index(drop = True, inplace = True)
+    data = data.T
+
+    # Train K-Means Constrained
+    kmeans_constrained = KMeansConstrained(
+                                            n_clusters=n_clusters,
+                                            size_min=size_min,
+                                            size_max=size_max,
+                                            random_state=random_state
+                                        )
+    a = kmeans_constrained.fit(data)
+    cluster_center_df = pd.DataFrame(kmeans_constrained.cluster_centers_)
+    labels = kmeans_constrained.fit_predict(data)  # Get cluster labels
+
+    return labels, cluster_center_df  
+
+def agg_scene_df(agg_dem_cus_period_scene_df:pd.DataFrame, scene_cluster_center_df:pd.DataFrame):
+    output_df = scene_cluster_center_df.T.copy()
+    output_df.index = agg_dem_cus_period_scene_df.index
+    return output_df
