@@ -109,4 +109,4 @@ def sto_model(  agg_dem_cus_period_clus_scene_df:pd.DataFrame,
     v_matrix = model.getSolution(v)
     z_matrix = model.getSolution(z)
 
-    return solve_time, obj_value, mip_gap_percent, x_matrix, y_matrix, v_matrix, z_matrix
+    return solve_time, obj_value, mip_gap_percent, model.getSolution(Setup_cost), model.getSolution(Operating_cost), model.getSolution(Tra_w_s_cost), model.getSolution(Recourse)
