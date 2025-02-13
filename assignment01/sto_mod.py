@@ -111,17 +111,14 @@ def main():
      demand_cus_period_scene_df) = pp.read_and_prep_data()
 
     time_limit_s = 3600
-    n_cus_clusters = 10
+    n_cus_clusters = 50
     n_scene_clusters = 3
 
     print(f'Now running Case N_cluster = {n_cus_clusters}')
     # Customer Clustering
     agg_dem_cus_period_scene_df = pp.agg_dem_cus_period_scene(demand_cus_period_scene_df, cus_df)
     cus_df, clust_center_df = pp.constrained_kmeans_clustering(agg_dem_cus_period_scene_df, n_clusters=n_scene_clusters,
-                                                               size_min=np.floor(
-                                                                   len(agg_dem_cus_period_scene_df.columns) / n_scene_clusters),
-                                                               size_max=len(agg_dem_cus_period_scene_df.columns),
-                                                               random_state=42)
+                                                               size_min=1, size_max=20, random_state=42)
 
     distance_w_to_cluster_df = pp.create_dis_mat_df(cand_df, clust_center_df, 'cityblock')
 
