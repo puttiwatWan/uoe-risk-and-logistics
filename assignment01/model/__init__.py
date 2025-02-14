@@ -1,1 +1,1 @@
-from .deter_model import DeterModel
+from .deterministic_model import DeterModel

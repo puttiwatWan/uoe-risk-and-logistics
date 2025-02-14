@@ -12,12 +12,12 @@ class DeterModel:
                  cluster_center_df: pd.DataFrame,
                  cost_w_to_s: pd.DataFrame,
                  cost_w_to_cluster: pd.DataFrame):
-        self.aggregated_demand_period_df = aggregated_demand_period_df
-        self.candidate_df = candidate_df
-        self.supplier_df = supplier_df
-        self.cluster_center_df = cluster_center_df
-        self.cost_w_to_s = cost_w_to_s
-        self.cost_w_to_cluster = cost_w_to_cluster
+        self.aggregated_demand_period_df = aggregated_demand_period_df.copy()
+        self.candidate_df = candidate_df.copy()
+        self.supplier_df = supplier_df.copy()
+        self.cluster_center_df = cluster_center_df.copy()
+        self.cost_w_to_s = cost_w_to_s.copy()
+        self.cost_w_to_cluster = cost_w_to_cluster.copy()
         self.time_limit_in_sec = 3600
 
         self.S = list(supplier_df.index)  # Supplier Index
@@ -37,9 +37,8 @@ class DeterModel:
     @time_spent_decorator
     def __init_variables(self):
         self.x = self.model.addVariables(self.W, self.C, self.T, name="x", vartype=xp.binary)
-        self.o = self.model.addVariables(self.W, self.T, name="o", vartype=xp.binary)
         self.y = self.model.addVariables(self.W, name="y", vartype=xp.binary)
-        # self.v = model.addVariables(self.W, self.C, self.P, self.T, name="v", vartype=xp.continuous)
+        self.o = self.model.addVariables(self.W, self.T, name="o", vartype=xp.binary)
         self.z = self.model.addVariables(self.W, self.S, self.T, name="z", vartype=xp.continuous)
 
     @time_spent_decorator
@@ -104,9 +103,12 @@ class DeterModel:
         print(f"Transportation from Supplier to Warehouse cost: {w_s_cost_sol}")
         print(f"Transportation from Warehouse to Customer cost: {w_c_cost_sol}")
 
+        opened_warehouse = []
         for t in self.T:
-            opened_warehouse = [w for w in self.W if y_sol[w, t] == 1]
-            print(f"Warehouses open in T: {t} are: {opened_warehouse}")
+            setup_warehouse_in_t = [w for w in self.W if
+                                    y_sol[w] == 1 and o_sol[w, t] == 1 and w not in opened_warehouse]
+            print(f"Warehouse setup in T: {t} are: {setup_warehouse_in_t}")
+            opened_warehouse += setup_warehouse_in_t
 
     def run(self, time_limit_s: int = 3600):
         self.time_limit_in_sec = time_limit_s
