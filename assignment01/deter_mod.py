@@ -89,9 +89,11 @@ def deter_model(aggregated_demand_period_df: pd.DataFrame,
         print(f"Transportation from Supplier to Warehouse cost: {w_s_cost_sol}")
         print(f"Transportation from Warehouse to Customer cost: {w_c_cost_sol}")
 
+        opened_warehouse = []
         for t in T:
-            opened_warehouse = [w for w in W if y_sol[w, t] == 1]
-            print(f"Warehouse open in T: {t} are: {opened_warehouse}")
+            setup_warehouse_in_t = [w for w in W if y_sol[w] == 1 and o_sol[w, t] == 1 and w not in opened_warehouse]
+            print(f"Warehouse setup in T: {t} are: {setup_warehouse_in_t}")
+            opened_warehouse += setup_warehouse_in_t
 
     print_results()
 
