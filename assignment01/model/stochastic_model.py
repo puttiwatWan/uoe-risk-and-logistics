@@ -35,6 +35,7 @@ class StochasticModel:
         self.T = list(agg_dem_cus_period_clus_scene_df.reset_index()['PeriodIndex'].unique())
         self.Phi = list(agg_dem_cus_period_clus_scene_df.columns)
 
+        xp.init('/Applications/FICO Xpress/xpressmp/bin/xpauth.xpr')
         self.model = xp.problem(name='MEWLP_Deterministic')
 
     @time_spent_decorator
@@ -131,7 +132,6 @@ class StochasticModel:
 
     def run(self, time_limit_s: int = 3600):
         self.time_limit_in_sec = time_limit_s
-        xp.init('/Applications/FICO Xpress/xpressmp/bin/xpauth.xpr')
 
         self.__init_variables()
         self.__generate_constraints()

@@ -32,6 +32,7 @@ class DeterModel:
         self.P = list(aggregated_demand_period_df.reset_index()['ProductIndex'].unique())
         self.T = list(list(aggregated_demand_period_df.columns))
 
+        xp.init('/Applications/FICO Xpress/xpressmp/bin/xpauth.xpr')
         self.model = xp.problem(name='MEWLP_Deterministic')
 
     @time_spent_decorator
@@ -112,7 +113,6 @@ class DeterModel:
 
     def run(self, time_limit_s: int = 3600):
         self.time_limit_in_sec = time_limit_s
-        xp.init('/Applications/FICO Xpress/xpressmp/bin/xpauth.xpr')
 
         self.__init_variables()
         self.__generate_constraints()
