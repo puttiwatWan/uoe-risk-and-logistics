@@ -44,17 +44,30 @@ class DeterModel:
 
     @time_spent_decorator
     def __generate_constraints(self):
+        # warehouse setup
         self.model.addConstraint(self.y[w] >= self.o[w, t] for w in self.W for t in self.T)
+        # warehouse operating in all subsequent time period
+        self.model.addConstraint(self.o[w, t] >= self.o[w, t - 1] for w in self.W for t in self.T if t != 0)
+
+        # Warehouse capacity limit using the total demand
         self.model.addConstraint(xp.Sum(self.aggregated_demand_period_df.loc[(c, p), t] * self.x[w, c, t]
                                         for c in self.C for p in self.P) <=
                                  self.candidate_df.loc[w, 'Capacity'] * self.o[w, t] for w in self.W for t in self.T)
-        self.model.addConstraint(self.o[w, t] >= self.o[w, t - 1] for w in self.W for t in self.T if t != 0)
+        # Alternative warehouse capacity limit using the supply amount
+        # self.model.addConstraint(xp.Sum(self.z[w, s, t] for s in self.S) <=
+        #                          self.candidate_df.loc[w, 'Capacity'] * self.o[w, t] for w in self.W for t in self.T)
+
+        # A supplier should supply the same amount as demand
         self.model.addConstraint(xp.Sum(self.z[w, s, t] for s in self.S_P_dict[p]) ==
                                  xp.Sum(self.aggregated_demand_period_df.loc[(c, p), t] * self.x[w, c, t]
                                         for c in self.C) for w in self.W for t in self.T for p in self.P)
-        self.model.addConstraint(self.x[w, c, t] <= self.o[w, t] for w in self.W for c in self.C for t in self.T)
 
+        # Customer can only be assigned to an open warehouse
+        self.model.addConstraint(self.x[w, c, t] <= self.o[w, t] for w in self.W for c in self.C for t in self.T)
+        # Each customer can only be assigned to one warehouse
         self.model.addConstraint(xp.Sum(self.x[w, c, t] for w in self.W) == 1 for c in self.C for t in self.T)
+
+        # Supplier capacity limit
         self.model.addConstraint(
             xp.Sum(self.z[w, s, t] for w in self.W) <= self.supplier_df.loc[s, 'SupplierCapacity']
             for s in self.S for t in self.T)

@@ -47,27 +47,32 @@ class StochasticModel:
 
     @time_spent_decorator
     def __generate_constraints(self):
+        # warehouse setup
         self.model.addConstraint(self.y[w] >= self.o[w, t] for w in self.W for t in self.T)
+        # warehouse operating in all subsequent time period
         self.model.addConstraint(self.o[w, t] >= self.o[w, t - 1] for w in self.W for t in self.T if t != 0)
-        self.model.addConstraint(
-            self.x[w, c, t, xi] <= self.o[w, t] for w in self.W for t in self.T for c in self.C for xi in self.Phi)
 
-        # Limit warehouse capacity >= total covered demand
+        # Warehouse capacity limit using the total demand
         self.model.addConstraint(xp.Sum(self.agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * self.x[w, c, t, xi]
                                         for c in self.C for p in self.P)
                                  <= self.candidate_df.loc[w, 'Capacity'] * self.o[w, t]
                                  for w in self.W for t in self.T for xi in self.Phi)
 
-        # A customer needs to be covered by a warehouse
-        self.model.addConstraint(
-            xp.Sum(self.x[w, c, t, xi] for w in self.W) == 1 for c in self.C for t in self.T for xi in self.Phi)
-
+        # Supply and demand
         self.model.addConstraint(xp.Sum(self.z[w, s, t] for s in self.S_P_dict[p]) >=
                                  xp.Sum(
                                      self.agg_dem_cus_period_clus_scene_df.loc[(c, p, t), xi] * self.x[w, c, t, xi] for
                                      c in self.C)
                                  for w in self.W for p in self.P for t in self.T for xi in self.Phi)
 
+        # Customer can only be assigned to an open warehouse
+        self.model.addConstraint(
+            self.x[w, c, t, xi] <= self.o[w, t] for w in self.W for t in self.T for c in self.C for xi in self.Phi)
+        # A customer needs to be covered by a warehouse
+        self.model.addConstraint(
+            xp.Sum(self.x[w, c, t, xi] for w in self.W) == 1 for c in self.C for t in self.T for xi in self.Phi)
+
+        # Supplier capacity limit
         self.model.addConstraint(
             xp.Sum(self.z[w, s, t] for w in self.W) <= self.supplier_df.loc[s, 'SupplierCapacity'] for s in self.S for t
             in self.T)
