@@ -1,0 +1,63 @@
+model "Assignment 2"
+ uses "mmxprs", "mmnl", "mmxnlp"
+
+  filename := "Data_Xpress.txt";
+
+declarations
+  ! Number of robots
+  nbRobots: integer
+  ! maximum number of chargers
+  m: integer
+  ! maximum number of robots at a charger
+  q: integer
+  ! Charging station build cost
+  Cb: integer
+  ! human penalty cost
+  Ch: integer
+  ! Maintenance cost
+  Cm: integer
+  ! Charging cost
+  Cc: real
+  ! Number of scenarios
+  nbScenarios: integer
+end-declarations
+
+! Read the various numbers from the file
+initializations from filename
+  nbRobots m q Cb Ch Cm Cc nbScenarios
+end-initializations
+
+declarations
+  ! Set of robots
+  Robots = 1..nbRobots
+  ! Set of scenarios
+  Scenarios = 1..nbScenarios
+
+  ! Robot locations
+  RobotLatitude: array(Robots) of real
+  RobotLongitude: array(Robots) of real
+  RobotRange: array(Robots) of real
+  RobotScenarioRange: array(Robots,Scenarios) of real
+end-declarations
+
+initializations from filename
+  RobotLatitude RobotLongitude RobotRange RobotScenarioRange
+end-initializations
+
+! ==================================================================================================
+! Data preparation
+! ==================================================================================================
+
+
+! ==================================================================================================
+! Optimization
+! ==================================================================================================
+
+
+! ==================================================================================================
+! Results
+! ==================================================================================================
+
+
+
+end-model
