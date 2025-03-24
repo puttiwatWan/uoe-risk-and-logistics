@@ -31,7 +31,7 @@ class HeuristicSolver:
         self.original_robot_dist_matrix = robot_distance_matrix.copy()
 
         self.robot_dist_matrix = robot_distance_matrix.copy()
-        self.stations = []
+        self.stations: List[List[int]] = []
 
     @time_spent_decorator
     def __reset_solver(self):
@@ -111,8 +111,7 @@ class HeuristicSolver:
 
                 # if contains out of range -> skip
                 tmp_station = station + [robot]
-                invalid = self.__contains_out_of_range(tmp_station)
-                if invalid:
+                if self.__contains_out_of_range(tmp_station):
                     continue
 
                 tmp_stations = self.stations.copy()  # copy current stations
