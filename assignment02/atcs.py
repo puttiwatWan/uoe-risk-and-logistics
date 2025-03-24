@@ -33,8 +33,11 @@ class ATCS:
         self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
         self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
 
-    def get_distance_matrix(self) -> np.ndarray:
-        loc = self.l_df.to_numpy()
+    def get_distance_matrix(self, sample_subset = False) -> np.ndarray:
+        if sample_subset:
+            loc = self.l_sub_df.to_numpy()
+        else:
+            loc = self.l_df.to_numpy()
         dist_mat = np.zeros((len(loc), len(loc)))
         for i in range(len(loc)):
             for j in range(i, len(loc), 1):
