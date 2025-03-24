@@ -49,10 +49,10 @@ class HeuristicSolver:
 
     @time_spent_decorator
     @functools.lru_cache(maxsize=1024)
-    def find_weighted_centroid(self, robots: Tuple) -> tuple[float, float]:
-        total_weight = sum(self.r_max - self.robot_range[v] for v in robots)
-        x = sum(self.r_max - self.robot_range[v] * self.robot_loc[v][0] for v in robots)/total_weight
-        y = sum(self.r_max - self.robot_range[v] * self.robot_loc[v][1] for v in robots)/total_weight
+    def find_weighted_centroid(self, station: Tuple) -> tuple[float, float]:
+        total_weight = sum((self.r_max - self.robot_range[v]) for v in station)
+        x = sum((self.r_max - self.robot_range[v]) * self.robot_loc[v][0] for v in station) / total_weight
+        y = sum((self.r_max - self.robot_range[v]) * self.robot_loc[v][1] for v in station) / total_weight
         return x, y
 
     @time_spent_decorator
