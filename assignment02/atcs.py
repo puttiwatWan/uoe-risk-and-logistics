@@ -1,8 +1,11 @@
+import math
+
 import pandas as pd
 import numpy as np
 
+
 class ATCS:
-    def __init__(self, seed:int = 100): 
+    def __init__(self, seed: int = 100):
         # Set the random seed for reproducibility
         self.seed = seed
         np.random.seed(self.seed) 
@@ -24,10 +27,21 @@ class ATCS:
         self.r_min = 10  # Minimum range of a robot
         self.r_max = 175  # Maximum range of a robot
 
-    def choose_subset_point(self, n_sample:int = 100, random_state:int = 100): # Generate Subset Data, for MINLP Model
-        self.l_sub_df = self.l_df.sample(n_sample, random_state = self.seed).copy()  # Set random_state for reproducibility
+    def choose_subset_point(self, n_sample: int = 100, random_state: int = 100):  # Generate Subset Data for MINLP Model
+        # Set random_state for reproducibility
+        self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed).copy()
         self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
         self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
+
+    def get_distance_matrix(self) -> np.ndarray:
+        loc = self.l_df.to_numpy()
+        dist_mat = np.zeros((len(loc), len(loc)))
+        for i in range(len(loc)):
+            for j in range(i, len(loc), 1):
+                dist_mat[i, j] = math.dist(loc[i], loc[j])
+                dist_mat[j, i] = dist_mat[i, j]
+
+        return dist_mat
 
     # def compute_charging_probability(self, r_i): # Not Sure
         # return np.exp(-self.ld**2 * (r_i - self.r_min) ** 2)
