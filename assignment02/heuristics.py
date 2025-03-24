@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy as np
 
 from atcs import ATCS
-from utils import time_spent_decorator
+from utils import set_print_time, time_spent_decorator
 
 
 class HeuristicSolver:
@@ -33,7 +33,6 @@ class HeuristicSolver:
         self.robot_dist_matrix = robot_distance_matrix.copy()
         self.stations: List[List[int]] = []
 
-    @time_spent_decorator
     def __reset_solver(self):
         self.robot_dist_matrix = self.original_robot_dist_matrix.copy()
         self.stations = []
@@ -48,7 +47,7 @@ class HeuristicSolver:
         return False
 
     @time_spent_decorator
-    @functools.lru_cache(maxsize=1024)
+    @functools.lru_cache(maxsize=512)
     def find_weighted_centroid(self, station: Tuple) -> tuple[float, float]:
         total_weight = sum((self.r_max - self.robot_range[v]) for v in station)
         x = sum((self.r_max - self.robot_range[v]) * self.robot_loc[v][0] for v in station) / total_weight
@@ -56,7 +55,7 @@ class HeuristicSolver:
         return x, y
 
     @time_spent_decorator
-    @functools.lru_cache(maxsize=1024)
+    @functools.lru_cache(maxsize=512)
     def find_cost_for_a_station(self, station: Tuple) -> float:
         cost = math.ceil(len(station)/self.q) * self.c_m
         centroid = self.find_weighted_centroid(station)
@@ -140,12 +139,14 @@ class HeuristicSolver:
 
 
 @time_spent_decorator
-def main():
-    data = ATCS(seed=1)
+def main(print_time=True):
+    set_print_time(print_time)
 
+    data = ATCS(seed=1)
     robot_loc = data.l_df.to_numpy()
     robot_range = data.r_df.to_numpy().flatten()
     dist_matrix = data.get_distance_matrix()
+
     solver = HeuristicSolver(robot_range=robot_range,
                              robot_loc=robot_loc,
                              robot_distance_matrix=dist_matrix)
@@ -154,4 +155,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(False)
