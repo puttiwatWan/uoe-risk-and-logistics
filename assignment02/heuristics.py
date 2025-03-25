@@ -6,6 +6,7 @@ import numpy as np
 
 from atcs import ATCS
 from utils import set_print_time, time_spent_decorator
+from config import config
 
 
 class HeuristicSolver:
@@ -135,26 +136,41 @@ class HeuristicSolver:
     @time_spent_decorator
     def print_results(self):
         print(f"The total cost is {self.find_total_cost(self.stations)}")
-        print(self.stations)
+        print(f"robot in stations: {self.stations}")
+
+        s_loc = []
+        for station in self.stations:
+            s_loc.append(self.find_weighted_centroid(tuple(station)))
+        print(f"stations location: {s_loc}")
 
 
 @time_spent_decorator
-def main(print_time=True):
-    set_print_time(print_time)
+def main():
+    print_time = config.print_time
+    seed = config.seed
+    use_subset_robot = config.use_subset_robot
+    n_samples = config.n_samples
+    starting_robot = config.default_starting_robot
 
-    N_sample = 20
-    data = ATCS(seed = 1)
-    data.choose_subset_point(N_sample) # Choose subset data
-    robot_loc = data.l_sub_df.to_numpy()
-    robot_range = data.r_sub_df.to_numpy().flatten()
-    dist_matrix = data.get_distance_matrix(sample_subset=True)
+    set_print_time(print_time)
+    data = ATCS(seed=seed)
+
+    robot_loc = data.l_df.to_numpy()
+    robot_range = data.r_df.to_numpy().flatten()
+    dist_matrix = data.get_distance_matrix(sample_subset=False)
+    if use_subset_robot:
+        data.choose_subset_point(n_samples)  # Choose subset data
+        robot_loc = data.l_sub_df.to_numpy()
+        robot_range = data.r_sub_df.to_numpy().flatten()
+        dist_matrix = data.get_distance_matrix(sample_subset=True)
 
     solver = HeuristicSolver(robot_range=robot_range,
                              robot_loc=robot_loc,
                              robot_distance_matrix=dist_matrix)
-    solver.solve()
+
+    solver.solve(starting_robot=starting_robot)
     solver.print_results()
 
 
 if __name__ == "__main__":
-    main(False)
+    main()

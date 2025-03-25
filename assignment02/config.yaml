@@ -1,0 +1,5 @@
+print_time: false
+use_subset_robot: True
+seed: 1
+n_samples: 20
+default_starting_robot: 0
