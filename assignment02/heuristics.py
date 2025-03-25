@@ -135,24 +135,42 @@ class HeuristicSolver:
     @time_spent_decorator
     def print_results(self):
         print(f"The total cost is {self.find_total_cost(self.stations)}")
-        print(self.stations)
+        print(f"robot in stations: {self.stations}")
+
+        s_loc = []
+        for station in self.stations:
+            s_loc.append(self.find_weighted_centroid(tuple(station)))
+        print(f"stations location: {s_loc}")
 
 
 @time_spent_decorator
-def main(print_time=True):
-    set_print_time(print_time)
+def main():
+    print_time = False
+    seed = 1
+    use_subset_robot = True
+    n_samples = 20
+    starting_robot = 0
 
-    data = ATCS(seed=1)
+    set_print_time(print_time)
+    data = ATCS(seed=seed)
+
     robot_loc = data.l_df.to_numpy()
     robot_range = data.r_df.to_numpy().flatten()
-    dist_matrix = data.get_distance_matrix()
+    dist_matrix = data.get_distance_matrix(sample_subset=False)
+
+    if use_subset_robot:
+        data.choose_subset_point(n_samples)  # Choose subset data
+        robot_loc = data.l_sub_df.to_numpy()
+        robot_range = data.r_sub_df.to_numpy().flatten()
+        dist_matrix = data.get_distance_matrix(sample_subset=True)
 
     solver = HeuristicSolver(robot_range=robot_range,
                              robot_loc=robot_loc,
                              robot_distance_matrix=dist_matrix)
-    solver.solve()
+
+    solver.solve(starting_robot=starting_robot)
     solver.print_results()
 
 
 if __name__ == "__main__":
-    main(False)
+    main()
