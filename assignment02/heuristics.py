@@ -6,6 +6,7 @@ import numpy as np
 
 from atcs import ATCS
 from utils import set_print_time, time_spent_decorator
+from config import config
 
 
 class HeuristicSolver:
@@ -145,11 +146,11 @@ class HeuristicSolver:
 
 @time_spent_decorator
 def main():
-    print_time = False
-    seed = 1
-    use_subset_robot = True
-    n_samples = 20
-    starting_robot = 0
+    print_time = config.print_time
+    seed = config.seed
+    use_subset_robot = config.use_subset_robot
+    n_samples = config.n_samples
+    starting_robot = config.default_starting_robot
 
     set_print_time(print_time)
     data = ATCS(seed=seed)
