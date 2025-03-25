@@ -157,7 +157,6 @@ def main():
     robot_loc = data.l_df.to_numpy()
     robot_range = data.r_df.to_numpy().flatten()
     dist_matrix = data.get_distance_matrix(sample_subset=False)
-
     if use_subset_robot:
         data.choose_subset_point(n_samples)  # Choose subset data
         robot_loc = data.l_sub_df.to_numpy()
