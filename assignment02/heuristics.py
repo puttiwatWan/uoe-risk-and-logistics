@@ -142,10 +142,12 @@ class HeuristicSolver:
 def main(print_time=True):
     set_print_time(print_time)
 
-    data = ATCS(seed=1)
-    robot_loc = data.l_df.to_numpy()
-    robot_range = data.r_df.to_numpy().flatten()
-    dist_matrix = data.get_distance_matrix()
+    N_sample = 20
+    data = ATCS(seed = 1)
+    data.choose_subset_point(N_sample) # Choose subset data
+    robot_loc = data.l_sub_df.to_numpy()
+    robot_range = data.r_sub_df.to_numpy().flatten()
+    dist_matrix = data.get_distance_matrix(sample_subset=True)
 
     solver = HeuristicSolver(robot_range=robot_range,
                              robot_loc=robot_loc,
