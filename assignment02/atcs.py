@@ -1,5 +1,5 @@
 import math
-
+import os
 import pandas as pd
 import numpy as np
 
@@ -26,6 +26,10 @@ class ATCS:
         self.ld = 0.012  # Lambda parameter for exponential distribution
         self.r_min = 10  # Minimum range of a robot
         self.r_max = 175  # Maximum range of a robot
+
+    def set_output_folder(self, solver_type:str, model_type:str, name:str):
+        folder_name = f'{solver_type}_output/{model_type}/{name}'
+        os.makedirs(folder_name , exist_ok=True)
 
     def choose_subset_point(self, n_sample: int = 100, random_state: int = 100):  # Generate Subset Data for MINLP Model
         # Set random_state for reproducibility
