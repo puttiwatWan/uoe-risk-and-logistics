@@ -31,9 +31,13 @@ class ATCS:
         folder_name = f'{solver_type}_output/{model_type}/{name}'
         os.makedirs(folder_name , exist_ok=True)
 
-    def choose_subset_point(self, n_sample: int = 100, random_state: int = 100):  # Generate Subset Data for MINLP Model
-        # Set random_state for reproducibility
-        self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed).copy()
+    def choose_subset_point(self, n_sample: int = 100, randomized:bool = True):  # Generate Subset Data for MINLP Model
+        if randomized:
+            # Set random_state for reproducibility
+            self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed).copy()
+        else:
+            self.l_sub_df = self.l_df.head(n_sample)
+
         self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
         self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
 
