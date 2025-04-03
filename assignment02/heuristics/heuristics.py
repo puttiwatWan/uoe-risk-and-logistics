@@ -3,15 +3,12 @@ import math
 from typing import List, Tuple
 
 import numpy as np
-
-from atcs import ATCS
-from utils import set_print_time, time_spent_decorator
-from config import config
+from utils import time_spent_decorator
 
 
-class HeuristicSolver:
-    def __init__(self, robot_loc: List[Tuple[float, float]],
-                 robot_range: List[float],
+class ConstructionHeuristicSolver:
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_range: np.array(List[float]),
                  robot_distance_matrix: np.ndarray,
                  ):
         # Given parameters
@@ -27,8 +24,8 @@ class HeuristicSolver:
         self.r_max = 175  # Maximum range of a robot
 
         self.total_robots = len(robot_loc)
-        self.robot_loc = np.array(robot_loc)
-        self.robot_range = np.array(robot_range)
+        self.robot_loc = robot_loc.copy()
+        self.robot_range = robot_range.copy()
         self.original_robot_dist_matrix = robot_distance_matrix.copy()
 
         self.robot_dist_matrix = robot_distance_matrix.copy()
@@ -142,35 +139,3 @@ class HeuristicSolver:
         for station in self.stations:
             s_loc.append(self.find_weighted_centroid(tuple(station)))
         print(f"stations location: {s_loc}")
-
-
-@time_spent_decorator
-def main():
-    print_time = config.print_time
-    seed = config.seed
-    use_subset_robot = config.use_subset_robot
-    n_samples = config.n_samples
-    starting_robot = config.default_starting_robot
-
-    set_print_time(print_time)
-    data = ATCS(seed=seed)
-
-    robot_loc = data.l_df.to_numpy()
-    robot_range = data.r_df.to_numpy().flatten()
-    dist_matrix = data.get_distance_matrix(sample_subset=False)
-    if use_subset_robot:
-        data.choose_subset_point(n_samples)  # Choose subset data
-        robot_loc = data.l_sub_df.to_numpy()
-        robot_range = data.r_sub_df.to_numpy().flatten()
-        dist_matrix = data.get_distance_matrix(sample_subset=True)
-
-    solver = HeuristicSolver(robot_range=robot_range,
-                             robot_loc=robot_loc,
-                             robot_distance_matrix=dist_matrix)
-
-    solver.solve(starting_robot=starting_robot)
-    solver.print_results()
-
-
-if __name__ == "__main__":
-    main()
