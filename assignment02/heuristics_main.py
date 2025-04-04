@@ -4,7 +4,7 @@ from atcs import ATCS
 from utils import set_print_time, time_spent_decorator
 from config import config
 
-from heuristics.heuristics import ConstructionHeuristicSolver
+from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics
 
 
 @time_spent_decorator
@@ -39,13 +39,16 @@ def main():
     solver.solve(starting_robot=starting_robot)
     solver.print_results()
 
-    # Find Centroids with Minimum Sum Distance
-    stations_loc = []
-    for station in solver.stations:
-        centroid = np.mean(robot_loc[station], axis=0)
-        stations_loc.append(centroid)
+    results = solver.get_heuristics_results()
 
-    # TODO: Solve Improvement Heuristics
+    print("_" * 60)
+    imp_centroid_solver = ImprovementCentroidHeuristics(robot_range=robot_range,
+                                                        robot_loc=robot_loc,
+                                                        robot_distance_matrix=dist_matrix,
+                                                        results=results)
+
+    imp_centroid_solver.solve()
+    imp_centroid_solver.print_results()
 
 
 if __name__ == "__main__":
