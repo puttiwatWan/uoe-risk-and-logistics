@@ -1,7 +1,7 @@
 import numpy as np
 
 from atcs import ATCS
-from utils import set_print_time, time_spent_decorator
+from utils import print_separator, set_print_time, time_spent_decorator
 from config import config
 
 from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics
@@ -32,6 +32,7 @@ def main():
     robot_range = np.array(robot_range)
 
     # Solve Construction Heuristics
+    print_separator("Construction Heuristics")
     solver = ConstructionHeuristicSolver(robot_range=robot_range,
                                          robot_loc=robot_loc,
                                          robot_distance_matrix=dist_matrix)
@@ -41,7 +42,7 @@ def main():
 
     results = solver.get_heuristics_results()
 
-    print("_" * 60)
+    print_separator("Improving Centroid Heuristics")
     imp_centroid_solver = ImprovementCentroidHeuristics(robot_range=robot_range,
                                                         robot_loc=robot_loc,
                                                         robot_distance_matrix=dist_matrix,
@@ -49,6 +50,10 @@ def main():
 
     imp_centroid_solver.solve()
     imp_centroid_solver.print_results()
+    results = imp_centroid_solver.get_heuristics_results()
+
+    # Improving Stations Reduction Heuristics
+    print_separator("Improving Stations Reduction Heuristics")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from config import config
-from utils import time_spent_decorator
+from utils import time_spent_decorator, find_centroid
 
 
 class HeuristicsResults:
@@ -48,7 +48,6 @@ class HeuristicSolver(ABC):
         self.robot_dist_matrix = self.original_robot_dist_matrix.copy()
         self.stations = []
 
-    @time_spent_decorator
     def contains_penalty(self, station: Union[List[float] | Tuple[float, float]], centroid: Tuple) -> bool:
         for v in station:
             dis = math.dist(self.robot_loc[v], centroid)
@@ -56,7 +55,6 @@ class HeuristicSolver(ABC):
                 return True
         return False
 
-    @time_spent_decorator
     @functools.lru_cache(maxsize=256)
     def find_weighted_centroid(self, station: Tuple) -> tuple[float, float]:
         total_weight = sum((self.r_max - self.robot_range[v]) for v in station)
@@ -64,7 +62,6 @@ class HeuristicSolver(ABC):
         y = sum((self.r_max - self.robot_range[v]) * self.robot_loc[v][1] for v in station) / total_weight
         return x, y
 
-    @time_spent_decorator
     @functools.lru_cache(maxsize=512)
     def find_cost_for_a_station(self, station: Tuple, centroid: Tuple) -> float:
         cost = math.ceil(len(station)/self.q) * self.c_m
@@ -76,7 +73,6 @@ class HeuristicSolver(ABC):
                 cost += self.c_c * (self.r_max - self.robot_range[v] + dis)
         return cost
 
-    @time_spent_decorator
     def find_total_cost(self, stations: List[List[int]], centroids: List[tuple[float, float]]) -> float:
         cost = 0
         for s, station in enumerate(stations):
@@ -93,6 +89,10 @@ class HeuristicSolver(ABC):
     def print_results(self):
         ...
 
+    @abstractmethod
+    def get_heuristics_results(self) -> HeuristicsResults:
+        ...
+
 
 class ConstructionHeuristicSolver(HeuristicSolver):
     def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
@@ -103,7 +103,6 @@ class ConstructionHeuristicSolver(HeuristicSolver):
                          robot_range=robot_range,
                          robot_distance_matrix=robot_distance_matrix)
 
-    @time_spent_decorator
     def find_next_robot(self, robot: int) -> int:
         if len(np.nonzero(self.robot_dist_matrix.flatten())[0]) == 0:
             return -1
@@ -163,7 +162,6 @@ class ConstructionHeuristicSolver(HeuristicSolver):
             prev_cost = cost
             robot = self.find_next_robot(robot)
 
-    @time_spent_decorator
     def print_results(self):
         centroids = [self.find_weighted_centroid(tuple(station)) for station in self.stations]
         print(f"The total cost is {self.find_total_cost(self.stations, centroids)}")
@@ -199,15 +197,11 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
         self.target_stations_loc = []
         self.stations_loc = results.stations_loc.copy()
         for station in results.stations:
-            centroid = self.find_centroid(robot_loc[station])
+            centroid = find_centroid(robot_loc[station])
             self.target_stations_loc.append(centroid)
 
         # a small number to stop improving if the improvement is less than this number
         self.epsilon = config.improvement_centroid.epsilon
-
-    @time_spent_decorator
-    def find_centroid(self, locations: Union[np.ndarray | List[List]]) -> Tuple:
-        return tuple(np.mean(locations, axis=0))
 
     @time_spent_decorator
     def solve(self, epsilon=config.improvement_centroid.epsilon):
@@ -218,14 +212,14 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
             improved_cost = self.epsilon
             penalty_count = 0
             while improved_cost >= self.epsilon:
-                new_centroid = self.find_centroid([self.stations_loc[s], self.target_stations_loc[s]])
+                if penalty_count > config.improvement_centroid.skip_after_penalty_count:
+                    break
+
+                new_centroid = find_centroid([self.stations_loc[s], self.target_stations_loc[s]])
                 if self.contains_penalty(station, new_centroid):
                     # if penalty incurs, go to next iteration and calculate new_centroid using the one causing penalty
                     self.target_stations_loc[s] = new_centroid
                     penalty_count += 1
-
-                    if penalty_count > config.improvement_centroid.skip_after_penalty_count:
-                        break
                 else:
                     # if no penalty, update to new location and calculate improved_cost
                     old_cost = self.find_cost_for_a_station(tuple(station), tuple(self.stations_loc[s]))
@@ -237,7 +231,6 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                     self.stations_loc[s] = new_centroid
                     penalty_count = 0
 
-    @time_spent_decorator
     def print_results(self):
         print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
         print(f"stations location: {self.stations_loc}")
@@ -246,3 +239,14 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
         return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
                                  stations_loc=self.stations_loc.copy(),
                                  stations_alloc=self.stations.copy())
+
+
+class ImprovementReduceStationHeuristics(HeuristicSolver):
+    def solve(self, **kwargs):
+        pass
+
+    def print_results(self):
+        pass
+
+    def get_heuristics_results(self) -> HeuristicsResults:
+        pass
