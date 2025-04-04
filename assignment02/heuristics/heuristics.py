@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Union
 
 import numpy as np
+
+from config import config
 from utils import time_spent_decorator
 
 
@@ -200,28 +202,40 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
             centroid = self.find_centroid(robot_loc[station])
             self.target_stations_loc.append(centroid)
 
-        self.epsilon = -100  # a small number to stop improving if the improvement is less than this number
+        # a small number to stop improving if the improvement is less than this number
+        self.epsilon = config.improvement_centroid.epsilon
 
     @time_spent_decorator
     def find_centroid(self, locations: Union[np.ndarray | List[List]]) -> Tuple:
         return tuple(np.mean(locations, axis=0))
 
     @time_spent_decorator
-    def solve(self, epsilon=-100):
+    def solve(self, epsilon=config.improvement_centroid.epsilon):
+        print(f"Initial target location: {self.target_stations_loc}")
         self.epsilon = epsilon
+
         for s, station in enumerate(self.stations):
             improved_cost = self.epsilon
-            while improved_cost <= self.epsilon:
+            penalty_count = 0
+            while improved_cost >= self.epsilon:
                 new_centroid = self.find_centroid([self.stations_loc[s], self.target_stations_loc[s]])
                 if self.contains_penalty(station, new_centroid):
                     # if penalty incurs, go to next iteration and calculate new_centroid using the one causing penalty
                     self.target_stations_loc[s] = new_centroid
+                    penalty_count += 1
+
+                    if penalty_count > config.improvement_centroid.skip_after_penalty_count:
+                        break
                 else:
                     # if no penalty, update to new location and calculate improved_cost
                     old_cost = self.find_cost_for_a_station(tuple(station), tuple(self.stations_loc[s]))
                     new_cost = self.find_cost_for_a_station(tuple(station), new_centroid)
-                    improved_cost = new_cost - old_cost  # expected to be negative
+                    if new_cost >= old_cost:
+                        break
+
+                    improved_cost = old_cost - new_cost  # expected to be negative
                     self.stations_loc[s] = new_centroid
+                    penalty_count = 0
 
     @time_spent_decorator
     def print_results(self):
