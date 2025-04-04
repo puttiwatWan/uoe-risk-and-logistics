@@ -37,6 +37,8 @@ class ATCS:
             self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed).copy()
         else:
             self.l_sub_df = self.l_df.head(n_sample)
+            self.l_sub_df.drop(self.l_sub_df.index[4], axis = 0, inplace=True)
+            self.l_sub_df.index = [i for i in range(len(self.l_sub_df))] 
 
         self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
         self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
