@@ -13,10 +13,15 @@ class HeuristicsResults:
     def __init__(self, objective_value: float = None,
                  stations_alloc: List[List[int]] = None,
                  stations_loc: List[Tuple[float, float]] = None,
+                 stations_with_penalty: List[List[int]] = None,
                  ):
         self.objective_value = objective_value
         self.stations = stations_alloc.copy()
         self.stations_loc = stations_loc.copy()
+
+        self.stations_with_penalty = [[] for _ in range(len(self.stations))]
+        if stations_with_penalty:
+            self.stations_with_penalty = stations_with_penalty.copy()
 
 
 class HeuristicSolver(ABC):
@@ -44,10 +49,6 @@ class HeuristicSolver(ABC):
         self.robot_dist_matrix = robot_distance_matrix.copy()
         self.stations: List[List[int]] = []
 
-    def reset_solver(self):
-        self.robot_dist_matrix = self.original_robot_dist_matrix.copy()
-        self.stations = []
-
     def contains_penalty(self, station: Union[List[float] | Tuple[float, float]], centroid: Tuple) -> bool:
         for v in station:
             dis = math.dist(self.robot_loc[v], centroid)
@@ -63,9 +64,14 @@ class HeuristicSolver(ABC):
         return x, y
 
     @functools.lru_cache(maxsize=512)
-    def find_cost_for_a_station(self, station: Tuple, centroid: Tuple) -> float:
-        cost = math.ceil(len(station)/self.q) * self.c_m
-        for v in station:
+    def find_cost_for_a_station(self, station: Tuple, centroid: Tuple, penalty_in_station: Tuple = None) -> float:
+        cost = math.ceil(len(station) / self.q) * self.c_m
+
+        combined_station = list(station)
+        if penalty_in_station:
+            combined_station += list(penalty_in_station)
+
+        for v in combined_station:
             dis = math.dist(self.robot_loc[v], centroid)
             if dis > self.robot_range[v]:
                 cost += self.c_h + self.c_c * (self.r_max - self.robot_range[v])
@@ -73,10 +79,13 @@ class HeuristicSolver(ABC):
                 cost += self.c_c * (self.r_max - self.robot_range[v] + dis)
         return cost
 
-    def find_total_cost(self, stations: List[List[int]], centroids: List[tuple[float, float]]) -> float:
+    def find_total_cost(self, stations: List[List[int]],
+                        centroids: List[tuple[float, float]],
+                        stations_with_penalty: List[List[int]] = None) -> float:
         cost = 0
         for s, station in enumerate(stations):
-            cost += self.find_cost_for_a_station(tuple(station), tuple(centroids[s]))
+            cost += self.find_cost_for_a_station(tuple(station), tuple(centroids[s]),
+                                                 tuple(stations_with_penalty[s]) if stations_with_penalty else None)
 
         cost += self.c_b * len(stations)
         return cost
@@ -233,6 +242,8 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
 
     def print_results(self):
         print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
+        print(f"Total stations: {len(self.stations)}")
+        print(f"robot in stations: {self.stations}")
         print(f"stations location: {self.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
@@ -241,12 +252,118 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                                  stations_alloc=self.stations.copy())
 
 
-class ImprovementReduceStationHeuristics(HeuristicSolver):
+class ImprovementStationsReductionHeuristics(HeuristicSolver):
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_range: np.array(List[float]),
+                 robot_distance_matrix: np.ndarray,
+                 results: HeuristicsResults
+                 ):
+        super().__init__(robot_loc=robot_loc,
+                         robot_range=robot_range,
+                         robot_distance_matrix=robot_distance_matrix)
+
+        self.stations = results.stations.copy()
+        self.stations_loc = results.stations_loc.copy()
+        self.stations_penalty = results.stations_with_penalty.copy()
+
     def solve(self, **kwargs):
-        pass
+        max_rps = self.m * self.q
+        station_to_remove = []
+        number_of_stations = len(self.stations)
+        for s in range(number_of_stations):
+            # filter for only stations with <= 5 robots
+            if len(self.stations[s]) > 5 or len(self.stations[s]) == 0:
+                continue
+
+            # if not enough available slots in other stations to move to, skip
+            available_slots = sum(max_rps - len(st + self.stations_penalty[i])
+                                  for i, st in enumerate(self.stations) if self.stations[s] != st and
+                                  len(st + self.stations_penalty[i]) > 5)
+            if available_slots < len(self.stations[s] + self.stations_penalty[s]):
+                continue
+
+            robots_to_remove = []
+            all_robots_in_s = self.stations[s] + self.stations_penalty[s]
+            for robot in all_robots_in_s:
+                # for each robot in the selected station, find the destination to move to that does not incur penalty
+                current_stations_amount = len(self.stations)
+                for i in range(current_stations_amount):
+                    # skip if no available slot to move to, is its own station, or the dst is leq 5
+                    if (len(self.stations[i] + self.stations_penalty[i]) >= max_rps or  # no available slot
+                            self.stations[i] == self.stations[s] or  # dst is src
+                            len(self.stations[i] + self.stations_penalty[i]) <= 5):  # dst leq 5
+                        continue
+
+                    # if move robot to the dst station and incur no penalty, move it
+                    tmp_dst_station = self.stations[i] + [robot]
+                    tmp_centroid = self.find_weighted_centroid(tuple(tmp_dst_station))
+                    if not self.contains_penalty(tmp_dst_station, tmp_centroid):
+                        print(f"Move robot {robot} from station {s} to {i}")
+                        self.stations[i].append(robot)
+                        self.stations_loc[i] = tmp_centroid
+
+                        robots_to_remove.append(robot)
+                        break
+
+            for r in robots_to_remove:
+                if r in self.stations[s]:
+                    self.stations[s].remove(r)
+                else:
+                    self.stations_penalty[s].remove(r)
+
+            # if there are robots to be moved left
+            if len(self.stations[s]) > 0:
+                # try moving to station with odd number of robots first
+                stations_odd_size = np.array([int(len(self.stations[st] + self.stations_penalty[st]) % self.q != 0 and
+                                                  len(self.stations[st] + self.stations_penalty[st]) > 5)
+                                              for st in range(len(self.stations))])
+                insert_to_stations = np.argwhere(stations_odd_size != 0).flatten()
+                if sum(stations_odd_size) >= len(self.stations[s]):
+                    robots = self.stations[s].copy()
+                    for r, robot in enumerate(robots):
+                        self.stations_penalty[insert_to_stations[r]].append(robot)
+                        self.stations[s].pop(0)
+                elif insert_to_stations:
+                    for inserted_station in insert_to_stations:
+                        self.stations_penalty[inserted_station].append(self.stations[s].pop(0))
+
+                # if no station with odd number of robots left --> only even number or full left
+                current_robots_amount = len(self.stations[s])
+                while current_robots_amount > 0:
+                    # find stations that does not reach limit and has >5 robots
+                    # resulting stations will have at most max_rps - 2 stations
+                    stations_available = np.array([int(
+                        max_rps > len(self.stations[i] + self.stations_penalty[i]) > 5)
+                        for i in range(len(self.stations))])
+
+                    insert_to_stations = np.argwhere(stations_available != 0).flatten()
+                    for i in insert_to_stations:
+                        try:
+                            # insert as a pair to reduce charger cost
+                            self.stations_penalty[i].append(self.stations[s].pop(0))
+                            self.stations_penalty[i].append(self.stations[s].pop(0))
+                        except IndexError:
+                            # if error --> no more robot left
+                            break
+
+                    current_robots_amount = len(self.stations[s])
+
+            station_to_remove.append(s)
+
+        for i, s in enumerate(station_to_remove):
+            self.stations.pop(s-i)
+            self.stations_penalty.pop(s-i)
+            self.stations_loc.pop(s-i)
 
     def print_results(self):
-        pass
+        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
+        print(f"Total stations: {len(self.stations)}")
+        print(f"robot in stations: {self.stations}")
+        print(f"penalty robot in stations: {self.stations_penalty}")
+        print(f"stations location: {self.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
-        pass
+        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
+                                 stations_alloc=self.stations.copy(),
+                                 stations_loc=self.stations_loc.copy(),
+                                 stations_with_penalty=self.stations_penalty.copy())

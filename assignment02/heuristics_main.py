@@ -4,7 +4,8 @@ from atcs import ATCS
 from utils import print_separator, set_print_time, time_spent_decorator
 from config import config
 
-from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics
+from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics, \
+    ImprovementStationsReductionHeuristics
 
 
 @time_spent_decorator
@@ -43,17 +44,34 @@ def main():
     results = solver.get_heuristics_results()
 
     print_separator("Improving Centroid Heuristics")
-    imp_centroid_solver = ImprovementCentroidHeuristics(robot_range=robot_range,
+    solver = ImprovementCentroidHeuristics(robot_range=robot_range,
+                                           robot_loc=robot_loc,
+                                           robot_distance_matrix=dist_matrix,
+                                           results=results)
+
+    solver.solve()
+    solver.print_results()
+    results = solver.get_heuristics_results()
+    contain_leq_five = min([len(station) for station in results.stations]) <= 5
+
+    # Improving Stations Reduction Heuristics
+    iter = 1
+    prev_value = 1
+    while contain_leq_five and results.objective_value != prev_value:
+        print_separator(f"Improving Stations Reduction Heuristics Iter {iter}")
+        solver = ImprovementStationsReductionHeuristics(robot_range=robot_range,
                                                         robot_loc=robot_loc,
                                                         robot_distance_matrix=dist_matrix,
                                                         results=results)
 
-    imp_centroid_solver.solve()
-    imp_centroid_solver.print_results()
-    results = imp_centroid_solver.get_heuristics_results()
+        solver.solve()
+        solver.print_results()
 
-    # Improving Stations Reduction Heuristics
-    print_separator("Improving Stations Reduction Heuristics")
+        iter += 1
+        prev_value = results.objective_value
+        results = solver.get_heuristics_results()
+        contain_leq_five = min([len(station) for station in results.stations]) <= 5
+
 
 
 if __name__ == "__main__":
