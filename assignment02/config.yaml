@@ -1,5 +1,5 @@
 print_time: false           # a flag saying whether to print the time used in each function
-use_subset_robot: true      # a flag saying whether to use a subset (true) or the whole data (false)
+use_subset_robot: false     # a flag saying whether to use a subset (true) or the whole data (false)
 seed: 1                     # random seed
 n_samples: 20               # number of random samples to run in the model
 default_starting_robot: 1   # starting robot index
@@ -7,3 +7,9 @@ default_starting_robot: 1   # starting robot index
 improvement_centroid:
   epsilon: 100                  # a small number to stop improving if the improvement is less than this number
   skip_after_penalty_count: 20  # if encounter penalty 20 consecutive times while improving, stop improve
+
+improvement_interchange:
+  # how many stations that the current station will compare to
+  # e.g. if cover_rage = 4, current station is 3, then station 3 will do the 1-neighbourhood with station 4, 5, 6, 7
+  # 0 means no limit (i.e. compare with all other stations)
+  cover_range: 0

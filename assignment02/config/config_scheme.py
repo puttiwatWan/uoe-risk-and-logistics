@@ -7,6 +7,14 @@ class ImprovementCentroid:
         self.skip_after_penalty_count: bool = raw.get('skip_after_penalty_count')
 
 
+class ImprovementInterchange:
+    def __init__(self, raw):
+        if raw is None:
+            raw = dict()
+
+        self.cover_range: int = raw.get('cover_range')
+
+
 class Config:
     def __init__(self, raw):
         if raw is None:
@@ -18,3 +26,5 @@ class Config:
         self.n_samples: int = raw.get('n_samples')
         self.default_starting_robot: int = raw.get('default_starting_robot')
         self.improvement_centroid: ImprovementCentroid = ImprovementCentroid(raw.get('improvement_centroid'))
+        self.improvement_interchange: ImprovementInterchange = ImprovementInterchange(
+            raw.get('improvement_interchange'))
