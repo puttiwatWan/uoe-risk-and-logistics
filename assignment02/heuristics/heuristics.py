@@ -446,8 +446,8 @@ class ImprovementLocalSearchHeuristics(HeuristicSolver):
                         self.stations_loc[s] = chosen_centroid_src
                         self.stations_loc[i] = chosen_centroid_dst
 
-                        print(f"Swap robot {chosen_robot_src} from station {s} with robot {chosen_robot_dst} "
-                              f"from station {i}")
+                        # print(f"Swap robot {chosen_robot_src} from station {s} with robot {chosen_robot_dst} "
+                        #       f"from station {i}")
 
                         has_change = True
                         break
