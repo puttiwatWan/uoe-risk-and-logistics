@@ -73,6 +73,5 @@ def main():
         contain_leq_five = min([len(station) for station in results.stations]) <= 5
 
 
-
 if __name__ == "__main__":
     main()
