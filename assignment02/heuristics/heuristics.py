@@ -201,6 +201,7 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                          robot_distance_matrix=robot_distance_matrix)
 
         self.stations = results.stations.copy()
+        self.stations_penalty = results.stations_with_penalty
 
         # Calculate current stations locations and improving direction
         self.target_stations_loc = []
@@ -231,8 +232,12 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                     penalty_count += 1
                 else:
                     # if no penalty, update to new location and calculate improved_cost
-                    old_cost = self.find_cost_for_a_station(tuple(station), tuple(self.stations_loc[s]))
-                    new_cost = self.find_cost_for_a_station(tuple(station), new_centroid)
+                    old_cost = self.find_cost_for_a_station(tuple(station),
+                                                            tuple(self.stations_loc[s]),
+                                                            tuple(self.stations_penalty[s]))
+                    new_cost = self.find_cost_for_a_station(tuple(station),
+                                                            new_centroid,
+                                                            tuple(self.stations_penalty[s]))
                     if new_cost >= old_cost:
                         break
 
@@ -241,15 +246,17 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                     penalty_count = 0
 
     def print_results(self):
-        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
+        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc, self.stations_penalty)}")
         print(f"Total stations: {len(self.stations)}")
         print(f"robot in stations: {self.stations}")
         print(f"stations location: {self.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
-        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
+        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc,
+                                                                      self.stations_penalty),
                                  stations_loc=self.stations_loc.copy(),
-                                 stations_alloc=self.stations.copy())
+                                 stations_alloc=self.stations.copy(),
+                                 stations_with_penalty=self.stations_penalty.copy())
 
 
 class ImprovementStationsReductionHeuristics(HeuristicSolver):
