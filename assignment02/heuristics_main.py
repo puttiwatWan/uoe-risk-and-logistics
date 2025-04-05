@@ -5,7 +5,7 @@ from utils import print_separator, set_print_time, time_spent_decorator
 from config import config
 
 from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics, \
-    ImprovementStationsReductionHeuristics
+    ImprovementStationsReductionHeuristics, ImprovementLocalSearchHeuristics
 
 
 @time_spent_decorator
@@ -71,6 +71,15 @@ def main():
         prev_value = results.objective_value
         results = solver.get_heuristics_results()
         contain_leq_five = min([len(station) for station in results.stations]) <= 5
+
+    print_separator("Improving Local Search Heuristics")
+    solver = ImprovementLocalSearchHeuristics(robot_range=robot_range,
+                                              robot_loc=robot_loc,
+                                              robot_distance_matrix=dist_matrix,
+                                              results=results)
+
+    solver.solve()
+    solver.print_results()
 
 
 if __name__ == "__main__":

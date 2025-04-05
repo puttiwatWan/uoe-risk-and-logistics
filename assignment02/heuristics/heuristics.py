@@ -369,3 +369,106 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
                                  stations_alloc=self.stations.copy(),
                                  stations_loc=self.stations_loc.copy(),
                                  stations_with_penalty=self.stations_penalty.copy())
+
+
+class ImprovementLocalSearchHeuristics(HeuristicSolver):
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_range: np.array(List[float]),
+                 robot_distance_matrix: np.ndarray,
+                 results: HeuristicsResults
+                 ):
+        super().__init__(robot_loc=robot_loc,
+                         robot_range=robot_range,
+                         robot_distance_matrix=robot_distance_matrix)
+
+        self.stations = results.stations.copy()
+        self.stations_loc = results.stations_loc.copy()
+        self.stations_penalty = results.stations_with_penalty.copy()
+
+    def solve(self, **kwargs):
+        total_stations = len(self.stations)
+        cover_range = 5
+        skipped_stations = []
+
+        has_change = True
+        while has_change:
+            has_change = False
+            for s in range(total_stations):
+                if s in skipped_stations:
+                    continue
+
+                check_until = min(s + cover_range, total_stations - 1)
+                for i in range(s+1, check_until + 1):
+                    improved_cost = 0
+                    chosen_robot_src = -1
+                    chosen_robot_dst = -1
+                    chosen_centroid_src = (0, 0)
+                    chosen_centroid_dst = (0, 0)
+                    for r in self.stations[s]:
+                        for r2 in self.stations[i]:
+                            tmp_src = self.stations[s] + [r2]
+                            tmp_src.remove(r)
+
+                            tmp_dst = self.stations[i] + [r]
+                            tmp_dst.remove(r2)
+
+                            new_src_centroid = self.find_weighted_centroid(tuple(tmp_src))
+                            new_dst_centroid = self.find_weighted_centroid(tuple(tmp_dst))
+
+                            if self.contains_penalty(tmp_src, new_src_centroid):
+                                continue
+                            if self.contains_penalty(tmp_dst, new_dst_centroid):
+                                continue
+
+                            old_src_cost = self.find_cost_for_a_station(tuple(self.stations[s]), self.stations_loc[s])
+                            old_dst_cost = self.find_cost_for_a_station(tuple(self.stations[i]), self.stations_loc[i])
+                            new_src_cost = self.find_cost_for_a_station(tuple(tmp_src), new_src_centroid)
+                            new_dst_cost = self.find_cost_for_a_station(tuple(tmp_dst), new_dst_centroid)
+
+                            old_cost = old_src_cost + old_dst_cost
+                            new_cost = new_src_cost + new_dst_cost
+
+                            if old_cost - new_cost > improved_cost:
+                                improved_cost = old_cost - new_cost
+                                chosen_robot_src = r
+                                chosen_robot_dst = r2
+                                chosen_centroid_src = new_src_centroid
+                                chosen_centroid_dst = new_dst_centroid
+
+                    if improved_cost > 0:
+                        print(f"Improved cost: {improved_cost}")
+                        self.stations[s].remove(chosen_robot_src)
+                        self.stations[s].append(chosen_robot_dst)
+
+                        self.stations[i].remove(chosen_robot_dst)
+                        self.stations[i].append(chosen_robot_src)
+
+                        self.stations_loc[s] = chosen_centroid_src
+                        self.stations_loc[i] = chosen_centroid_dst
+
+                        print(f"Swap robot {chosen_robot_src} from station {s} with robot {chosen_robot_dst} "
+                              f"from station {i}")
+
+                        has_change = True
+                        break
+
+                    if has_change:
+                        break
+
+                if has_change:
+                    break
+
+                skipped_stations.append(s)
+
+    def print_results(self):
+        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
+        print(f"Total stations: {len(self.stations)}")
+        print(f"robot in stations: {self.stations}")
+        print(f"penalty robot in stations: {self.stations_penalty}")
+        print(f"stations location: {self.stations_loc}")
+
+    def get_heuristics_results(self) -> HeuristicsResults:
+        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
+                                 stations_alloc=self.stations.copy(),
+                                 stations_loc=self.stations_loc.copy(),
+                                 stations_with_penalty=self.stations_penalty.copy())
