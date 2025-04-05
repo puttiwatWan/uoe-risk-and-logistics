@@ -266,19 +266,21 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
         self.stations_loc = results.stations_loc.copy()
         self.stations_penalty = results.stations_with_penalty.copy()
 
+        self.min_robots_req = [m for m in range(self.q * self.m) if self.c_b < m * self.c_h][0]
+
     def solve(self, **kwargs):
         max_rps = self.m * self.q
         station_to_remove = []
         number_of_stations = len(self.stations)
         for s in range(number_of_stations):
             # filter for only stations with <= 5 robots
-            if len(self.stations[s]) > 5 or len(self.stations[s]) == 0:
+            if len(self.stations[s]) >= self.min_robots_req or len(self.stations[s]) == 0:
                 continue
 
             # if not enough available slots in other stations to move to, skip
             available_slots = sum(max_rps - len(st + self.stations_penalty[i])
                                   for i, st in enumerate(self.stations) if self.stations[s] != st and
-                                  len(st + self.stations_penalty[i]) > 5)
+                                  len(st + self.stations_penalty[i]) >= self.min_robots_req)
             if available_slots < len(self.stations[s] + self.stations_penalty[s]):
                 continue
 
@@ -291,7 +293,7 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
                     # skip if no available slot to move to, is its own station, or the dst is leq 5
                     if (len(self.stations[i] + self.stations_penalty[i]) >= max_rps or  # no available slot
                             self.stations[i] == self.stations[s] or  # dst is src
-                            len(self.stations[i] + self.stations_penalty[i]) <= 5):  # dst leq 5
+                            len(self.stations[i] + self.stations_penalty[i]) < self.min_robots_req):  # dst leq 5
                         continue
 
                     # if move robot to the dst station and incur no penalty, move it
@@ -314,9 +316,9 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
             # if there are robots to be moved left
             if len(self.stations[s]) > 0:
                 # try moving to station with odd number of robots first
-                stations_odd_size = np.array([int(len(self.stations[st] + self.stations_penalty[st]) % self.q != 0 and
-                                                  len(self.stations[st] + self.stations_penalty[st]) > 5)
-                                              for st in range(len(self.stations))])
+                stations_odd_size = np.array([int(len(self.stations[i] + self.stations_penalty[i]) % self.q != 0 and
+                                                  len(self.stations[i] + self.stations_penalty[i]) >=
+                                                  self.min_robots_req) for i in range(len(self.stations))])
                 insert_to_stations = np.argwhere(stations_odd_size != 0).flatten()
                 if sum(stations_odd_size) >= len(self.stations[s]):
                     robots = self.stations[s].copy()
@@ -333,7 +335,7 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
                     # find stations that does not reach limit and has >5 robots
                     # resulting stations will have at most max_rps - 2 stations
                     stations_available = np.array([int(
-                        max_rps > len(self.stations[i] + self.stations_penalty[i]) > 5)
+                        max_rps > len(self.stations[i] + self.stations_penalty[i]) >= self.min_robots_req)
                         for i in range(len(self.stations))])
 
                     insert_to_stations = np.argwhere(stations_available != 0).flatten()
