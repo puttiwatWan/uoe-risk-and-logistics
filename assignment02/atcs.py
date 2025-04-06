@@ -27,6 +27,9 @@ class ATCS:
         self.r_min = 10  # Minimum range of a robot
         self.r_max = 175  # Maximum range of a robot
 
+        # Determine Charging Decision
+        self.cc_df = self.determine_charging_decision()
+
     def set_output_folder(self, solver_type:str, model_type:str, name:str):
         folder_name = f'{solver_type}_output/{model_type}/{name}'
         os.makedirs(folder_name , exist_ok=True)
@@ -61,8 +64,9 @@ class ATCS:
         uni_mat = np.random.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten())).reshape(len(self.r_s_df), len(self.r_s_df.columns))
         check_mat = uni_mat <= prop_mat
         check_mat = check_mat.astype('int')
-
-        self.r_s_prep_df = self.r_s_df * check_mat
+        
+        return check_mat
+        # self.r_s_prep_df = self.r_s_df * check_mat
 
 
     # def compute_charging_probability(self, r_i): # Not Sure
