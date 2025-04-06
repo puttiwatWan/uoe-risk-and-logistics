@@ -60,7 +60,7 @@ class ATCS:
         return dist_mat
 
     def determine_charging_decision(self):
-        prop_mat = np.exp(-((self.ld)**2) * ((self.r_s_df - self.r_max)**2))
+        prop_mat = np.exp(-((self.ld)**2) * ((self.r_s_df - self.r_min)**2))
         uni_mat = np.random.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten())).reshape(len(self.r_s_df), len(self.r_s_df.columns))
         check_mat = uni_mat <= prop_mat
         check_mat = check_mat.astype('int')
