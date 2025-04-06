@@ -4,7 +4,7 @@ from atcs import ATCS
 from utils import print_separator, set_print_time, time_spent_decorator
 from config import config
 
-from heuristics.heuristics import ConstructionHeuristicSolver, ImprovementCentroidHeuristics, \
+from heuristics.deterministic import ConstructionHeuristicSolver, ImprovementCentroidHeuristics, \
     ImprovementStationsReductionHeuristics, ImprovementLocalSearchHeuristics
 
 
