@@ -21,7 +21,7 @@ def main():
     robot_range_scenarios = data.r_s_df.to_numpy()
     dist_matrix = data.distance_matrix.copy()
     robot_scenario_used = data.cc_df.to_numpy()
-    expected_range = data.expected_range.to_numpy()
+    expected_range = data.expected_range.to_numpy().flatten()
     if use_subset_robot:
         data.choose_subset_point(n_samples, randomized=False)  # Choose subset data
         robot_loc = data.l_sub_df.to_numpy()
