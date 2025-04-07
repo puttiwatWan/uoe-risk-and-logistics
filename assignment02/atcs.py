@@ -38,9 +38,9 @@ class ATCS(Parameters):
 
     def set_output_folder(self, solver_type: str, model_type: str, name: str):
         folder_name = f'{solver_type}_output/{model_type}/{name}'
-        os.makedirs(folder_name , exist_ok=True)
+        os.makedirs(folder_name, exist_ok=True)
 
-    def choose_subset_point(self, n_sample: int = 100, randomized: bool = False):  # Generate Subset Data for MINLP Model
+    def choose_subset_point(self, n_sample: int = 100, randomized: bool = False):  # Generate Subset Data
         if randomized:
             # Set random_state for reproducibility
             self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed)
