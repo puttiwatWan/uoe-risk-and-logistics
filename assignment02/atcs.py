@@ -7,7 +7,7 @@ from utils.parameters import Parameters
 
 
 class ATCS(Parameters):
-    def __init__(self, seed: int = 100):
+    def __init__(self, seed: int = 100, n_sample: int = None, randomized: bool = False):
         super().__init__()
 
         # Set the random seed for reproducibility
@@ -33,12 +33,14 @@ class ATCS(Parameters):
         self.distance_matrix_sub = None
         self.cc_sub_df = None
         self.expected_range_sub = None
+        if n_sample:
+            self.choose_subset_point(n_sample=n_sample, randomized=randomized)
 
     def set_output_folder(self, solver_type: str, model_type: str, name: str):
         folder_name = f'{solver_type}_output/{model_type}/{name}'
         os.makedirs(folder_name , exist_ok=True)
 
-    def choose_subset_point(self, n_sample: int = 100, randomized:bool = True):  # Generate Subset Data for MINLP Model
+    def choose_subset_point(self, n_sample: int = 100, randomized: bool = False):  # Generate Subset Data for MINLP Model
         if randomized:
             # Set random_state for reproducibility
             self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed)
