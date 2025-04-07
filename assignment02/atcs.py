@@ -37,9 +37,9 @@ class ATCS(Parameters):
             self.choose_subset_point(n_sample=n_sample, randomized=randomized)
 
     def set_output_folder(self, solver_type: str, model_type: str, name: str):
-        folder_name = f'{solver_type}_output/{model_type}/{name}'
-        os.makedirs(folder_name, exist_ok=True)
-
+        self.folder_name = f'{solver_type}_output/{model_type}/{name}'
+        os.makedirs(self.folder_name, exist_ok=True)
+    
     def choose_subset_point(self, n_sample: int = 100, randomized: bool = False):  # Generate Subset Data
         if randomized:
             # Set random_state for reproducibility
