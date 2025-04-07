@@ -1,7 +1,7 @@
 print_time: false           # a flag saying whether to print the time used in each function
-use_subset_robot: true     # a flag saying whether to use a subset (true) or the whole data (false)
+use_subset_robot: true      # a flag saying whether to use a subset (true) or the whole data (false)
 seed: 1                     # random seed
-n_samples: 5               # number of random samples to run in the model
+n_samples: 5                # number of random samples to run in the model
 default_starting_robot: 1   # starting robot index
 
 improvement_centroid:
