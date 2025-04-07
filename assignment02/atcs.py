@@ -30,6 +30,8 @@ class ATCS:
         # Determine Charging Decision
         self.cc_df = self.determine_charging_decision()
 
+        self.expected_range = self.calculate_stochastic_expected_range()
+
     def set_output_folder(self, solver_type:str, model_type:str, name:str):
         folder_name = f'{solver_type}_output/{model_type}/{name}'
         os.makedirs(folder_name , exist_ok=True)
@@ -46,6 +48,7 @@ class ATCS:
         self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
         self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
         self.cc_sub_df = self.cc_df.loc[self.l_sub_df.index,:].copy()
+        self.expected_range_sub = self.expected_range.head(len(self.l_sub_df.index))
         
     def get_distance_matrix(self, sample_subset = False) -> np.ndarray:
         if sample_subset:
@@ -69,6 +72,8 @@ class ATCS:
         return check_mat
         # self.r_s_prep_df = self.r_s_df * check_mat
 
+    def calculate_stochastic_expected_range(self):
+        return (self.cc_df * self.r_s_df).replace(0, np.NaN).mean(axis=1)
 
     # def compute_charging_probability(self, r_i): # Not Sure
         # return np.exp(-self.ld**2 * (r_i - self.r_min) ** 2)

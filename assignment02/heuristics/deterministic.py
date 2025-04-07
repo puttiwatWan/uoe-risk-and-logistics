@@ -65,7 +65,7 @@ class HeuristicSolver(ABC):
 
     @functools.lru_cache(maxsize=512)
     def find_cost_for_a_station(self, station: Tuple, centroid: Tuple, penalty_in_station: Tuple = None) -> float:
-        cost = math.ceil(len(station) / self.q) * self.c_m
+        cost = math.ceil(len(station) / self.q) * self.c_m  # initialize with chargers cost
 
         for v in station:
             dis = math.dist(self.robot_loc[v], centroid)
