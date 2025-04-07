@@ -5,23 +5,19 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .deterministic import HeuristicsResults, ConstructionHeuristicSolver, HeuristicSolver
+from .deterministic import HeuristicsResults, ConstructionHeuristicSolver, HeuristicSolver, \
+    ImprovementCentroidHeuristics, ImprovementStationsReductionHeuristics, ImprovementLocalSearchHeuristics
 
 
 class StochasticHeuristicSolver(HeuristicSolver, ABC):
     def __init__(self, robot_range_scenarios: np.array(List[List[float]]),
                  robot_scenario_used: np.array(List[List[int]]),
-                 robot_loc: np.array(List[Tuple[float, float]]) = None,
-                 robot_range: np.array(List[float]) = None,
-                 robot_distance_matrix: np.ndarray = None):
-
-        super().__init__(robot_loc, robot_range, robot_distance_matrix)
-
+                 ):
         self.robot_range_scenarios = robot_range_scenarios.copy()
         self.robot_scenario_used = robot_scenario_used.copy()
         self.n_scenarios = robot_range_scenarios.shape[1]
 
-    @functools.lru_cache(maxsize=512)
+    @functools.lru_cache(maxsize=256)
     def find_cost_for_a_station(self, station: Tuple, centroid: Tuple, penalty_in_station: Tuple = None) -> float:
         total_cost = math.ceil(len(station) / self.q) * self.c_m  # initialize with chargers cost
         scenarios_costs = []
@@ -60,8 +56,54 @@ class StochasticConstructionHeuristicSolver(StochasticHeuristicSolver, Construct
                                              robot_range=robot_expected_range,
                                              robot_distance_matrix=robot_distance_matrix)
 
-    # def print_results(self):
-    #     pass
-    #
-    # def get_heuristics_results(self) -> HeuristicsResults:
-    #     pass
+
+class StochasticImprovementCentroidHeuristics(StochasticHeuristicSolver, ImprovementCentroidHeuristics):
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_expected_range: np.array(List[float]),
+                 robot_distance_matrix: np.ndarray,
+                 robot_range_scenarios: np.array(List[List[float]]),
+                 robot_scenario_used: np.array(List[List[int]]),
+                 results: HeuristicsResults
+                 ):
+
+        StochasticHeuristicSolver.__init__(self, robot_range_scenarios=robot_range_scenarios,
+                                           robot_scenario_used=robot_scenario_used)
+        ImprovementCentroidHeuristics.__init__(self, robot_loc=robot_loc,
+                                               robot_range=robot_expected_range,
+                                               robot_distance_matrix=robot_distance_matrix,
+                                               results=results)
+
+
+class StochasticImprovementStationsReductionHeuristics(StochasticHeuristicSolver,
+                                                       ImprovementStationsReductionHeuristics):
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_expected_range: np.array(List[float]),
+                 robot_distance_matrix: np.ndarray,
+                 robot_range_scenarios: np.array(List[List[float]]),
+                 robot_scenario_used: np.array(List[List[int]]),
+                 results: HeuristicsResults
+                 ):
+
+        StochasticHeuristicSolver.__init__(self, robot_range_scenarios=robot_range_scenarios,
+                                           robot_scenario_used=robot_scenario_used)
+        ImprovementStationsReductionHeuristics.__init__(self, robot_loc=robot_loc,
+                                                        robot_range=robot_expected_range,
+                                                        robot_distance_matrix=robot_distance_matrix,
+                                                        results=results)
+
+
+class StochasticImprovementLocalSearchHeuristics(StochasticHeuristicSolver, ImprovementLocalSearchHeuristics):
+    def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
+                 robot_expected_range: np.array(List[float]),
+                 robot_distance_matrix: np.ndarray,
+                 robot_range_scenarios: np.array(List[List[float]]),
+                 robot_scenario_used: np.array(List[List[int]]),
+                 results: HeuristicsResults
+                 ):
+
+        StochasticHeuristicSolver.__init__(self, robot_range_scenarios=robot_range_scenarios,
+                                           robot_scenario_used=robot_scenario_used)
+        ImprovementLocalSearchHeuristics.__init__(self, robot_loc=robot_loc,
+                                                  robot_range=robot_expected_range,
+                                                  robot_distance_matrix=robot_distance_matrix,
+                                                  results=results)

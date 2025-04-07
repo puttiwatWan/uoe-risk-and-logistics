@@ -1,5 +1,6 @@
 from atcs import ATCS
-from heuristics.stochastic import StochasticConstructionHeuristicSolver
+from heuristics.stochastic import StochasticConstructionHeuristicSolver, StochasticImprovementCentroidHeuristics, \
+    StochasticImprovementStationsReductionHeuristics, StochasticImprovementLocalSearchHeuristics
 from utils import print_separator, set_print_time, time_spent_decorator
 from config import config
 
@@ -29,20 +30,62 @@ def main():
         expected_range = data.expected_range_sub.to_numpy()
         dist_matrix = data.get_distance_matrix(sample_subset=use_subset_robot)
 
-    print(robot_scenario_used.shape)
-
     # Solve Construction Heuristics
     print_separator("Construction Heuristics")
-    solver = StochasticConstructionHeuristicSolver(robot_range_scenarios=robot_range_scenarios,
-                                                   robot_loc=robot_loc,
+    solver = StochasticConstructionHeuristicSolver(robot_loc=robot_loc,
                                                    robot_expected_range=expected_range,
                                                    robot_distance_matrix=dist_matrix,
+                                                   robot_range_scenarios=robot_range_scenarios,
                                                    robot_scenario_used=robot_scenario_used,)
 
     solver.solve(starting_robot=starting_robot)
     solver.print_results()
 
     results = solver.get_heuristics_results()
+
+    print_separator("Improving Centroid Heuristics")
+    solver = StochasticImprovementCentroidHeuristics(robot_expected_range=expected_range,
+                                                     robot_loc=robot_loc,
+                                                     robot_distance_matrix=dist_matrix,
+                                                     robot_range_scenarios=robot_range_scenarios,
+                                                     robot_scenario_used=robot_scenario_used,
+                                                     results=results)
+
+    solver.solve()
+    solver.print_results()
+    results = solver.get_heuristics_results()
+    contain_leq_five = min([len(station) for station in results.stations]) <= 5
+
+    # Improving Stations Reduction Heuristics
+    iter = 1
+    prev_value = 1
+    while contain_leq_five and results.objective_value != prev_value:
+        print_separator(f"Improving Stations Reduction Heuristics Iter {iter}")
+        solver = StochasticImprovementStationsReductionHeuristics(robot_expected_range=expected_range,
+                                                                  robot_loc=robot_loc,
+                                                                  robot_distance_matrix=dist_matrix,
+                                                                  robot_range_scenarios=robot_range_scenarios,
+                                                                  robot_scenario_used=robot_scenario_used,
+                                                                  results=results)
+
+        solver.solve()
+        solver.print_results()
+
+        iter += 1
+        prev_value = results.objective_value
+        results = solver.get_heuristics_results()
+        contain_leq_five = min([len(station) for station in results.stations]) <= 5
+
+    print_separator("Improving Local Search Heuristics")
+    solver = StochasticImprovementLocalSearchHeuristics(robot_expected_range=expected_range,
+                                                        robot_loc=robot_loc,
+                                                        robot_distance_matrix=dist_matrix,
+                                                        robot_range_scenarios=robot_range_scenarios,
+                                                        robot_scenario_used=robot_scenario_used,
+                                                        results=results)
+
+    solver.solve()
+    solver.print_results()
 
 
 if __name__ == "__main__":
