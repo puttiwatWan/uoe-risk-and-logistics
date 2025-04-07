@@ -27,7 +27,7 @@ def main():
         robot_loc = data.l_sub_df.to_numpy()
         robot_range_scenarios = data.r_s_sub_df.to_numpy()
         robot_scenario_used = data.cc_sub_df.to_numpy()
-        expected_range = data.expected_range_sub.to_numpy()
+        expected_range = data.expected_range_sub.to_numpy().flatten()
         dist_matrix = data.distance_matrix_sub.copy()
 
     # Solve Construction Heuristics
