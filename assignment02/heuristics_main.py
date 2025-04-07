@@ -22,12 +22,12 @@ def main():
 
     robot_loc = data.l_df.to_numpy()
     robot_range = data.r_df.to_numpy().flatten()
-    dist_matrix = data.get_distance_matrix(sample_subset=False)
+    dist_matrix = data.distance_matrix.copy()
     if use_subset_robot:
         data.choose_subset_point(n_samples, randomized=False)  # Choose subset data
         robot_loc = data.l_sub_df.to_numpy()
         robot_range = data.r_sub_df.to_numpy().flatten()
-        dist_matrix = data.get_distance_matrix(sample_subset=True)
+        dist_matrix = data.distance_matrix_sub.copy()
 
     robot_loc = np.array(robot_loc)
     robot_range = np.array(robot_range)

@@ -10,12 +10,6 @@ class ATCS:
         self.seed = seed
         np.random.seed(self.seed) 
 
-        # Initialization the given data
-        # Load robot data
-        self.r_df = pd.read_csv('range.csv', index_col=0)  # Deterministic range
-        self.r_s_df = pd.read_csv('range_scenarios.csv', index_col=0)  # Stochastic scenarios
-        self.l_df = pd.read_csv('robot_locations.csv', index_col=0)  # Robot locations
-        
         # Given parameters
         self.m = 8  # Max chargers per station
         self.q = 2  # Max robots per charger
@@ -27,30 +21,44 @@ class ATCS:
         self.r_min = 10  # Minimum range of a robot
         self.r_max = 175  # Maximum range of a robot
 
-        # Determine Charging Decision
-        self.cc_df = self.determine_charging_decision()
+        # Initialization the given data
+        # Load robot data
+        self.r_df = pd.read_csv('range.csv', index_col=0)  # Deterministic range
+        self.r_s_df = pd.read_csv('range_scenarios.csv', index_col=0)  # Stochastic scenarios
+        self.l_df = pd.read_csv('robot_locations.csv', index_col=0)  # Robot locations
 
-        self.expected_range = self.calculate_stochastic_expected_range()
+        self.distance_matrix = self.get_distance_matrix()  # distance matrix between each robot
 
-    def set_output_folder(self, solver_type:str, model_type:str, name:str):
+        # Stochastic values
+        self.cc_df = self.determine_charging_decision()  # same size as range_sc_df. value 0 or 1 -> charge or not
+        self.expected_range = self.calculate_stochastic_expected_range()  # expected range from range_sc_df
+
+        # Initialize subset variables
+        self.r_sub_df = None
+        self.r_s_sub_df = None
+        self.l_sub_df = None
+        self.distance_matrix_sub = None
+        self.cc_sub_df = None
+        self.expected_range_sub = None
+
+    def set_output_folder(self, solver_type: str, model_type: str, name: str):
         folder_name = f'{solver_type}_output/{model_type}/{name}'
         os.makedirs(folder_name , exist_ok=True)
 
     def choose_subset_point(self, n_sample: int = 100, randomized:bool = True):  # Generate Subset Data for MINLP Model
         if randomized:
             # Set random_state for reproducibility
-            self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed).copy()
+            self.l_sub_df = self.l_df.sample(n_sample, random_state=self.seed)
         else:
             self.l_sub_df = self.l_df.head(n_sample)
-            # self.l_sub_df.drop(self.l_sub_df.index[4], axis = 0, inplace=True)
-            # self.l_sub_df.index = [i for i in range(len(self.l_sub_df))]
 
-        self.r_sub_df = self.r_df.loc[self.l_sub_df.index,:].copy()
-        self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :].copy()
-        self.cc_sub_df = self.cc_df.loc[self.l_sub_df.index,:].copy()
-        self.expected_range_sub = self.expected_range.head(len(self.l_sub_df.index))
+        self.r_sub_df = self.r_df.loc[self.l_sub_df.index, :]
+        self.r_s_sub_df = self.r_s_df.loc[self.l_sub_df.index, :]
+        self.cc_sub_df = self.cc_df.loc[self.l_sub_df.index, :]
+        self.expected_range_sub = self.expected_range.loc[self.l_sub_df.index, :]
+        self.distance_matrix_sub = self.get_distance_matrix(sample_subset=True)
         
-    def get_distance_matrix(self, sample_subset = False) -> np.ndarray:
+    def get_distance_matrix(self, sample_subset=False) -> np.ndarray:
         if sample_subset:
             loc = self.l_sub_df.to_numpy()
         else:
@@ -63,17 +71,14 @@ class ATCS:
 
         return dist_mat
 
-    def determine_charging_decision(self):
-        prop_mat = np.exp(-((self.ld)**2) * ((self.r_s_df - self.r_min)**2))
-        uni_mat = np.random.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten())).reshape(len(self.r_s_df), len(self.r_s_df.columns))
-        check_mat = uni_mat <= prop_mat
-        check_mat = check_mat.astype('int')
+    def determine_charging_decision(self) -> pd.DataFrame:
+        prob_mat = np.exp(-(self.ld**2) * ((self.r_s_df - self.r_min)**2))
+        uniform_mat = np.random.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten()))
+        uniform_mat = uniform_mat.reshape(len(self.r_s_df), len(self.r_s_df.columns))
+        should_charge_mat = uniform_mat <= prob_mat
+        should_charge_mat = should_charge_mat.astype('int')
         
-        return check_mat
-        # self.r_s_prep_df = self.r_s_df * check_mat
+        return should_charge_mat
 
-    def calculate_stochastic_expected_range(self):
-        return (self.cc_df * self.r_s_df).replace(0, np.NaN).mean(axis=1)
-
-    # def compute_charging_probability(self, r_i): # Not Sure
-        # return np.exp(-self.ld**2 * (r_i - self.r_min) ** 2)
+    def calculate_stochastic_expected_range(self) -> pd.DataFrame:
+        return (self.cc_df * self.r_s_df).replace(0, np.NaN).mean(axis=1).to_frame(name="expected_range")
