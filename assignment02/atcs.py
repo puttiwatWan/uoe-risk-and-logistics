@@ -8,7 +8,7 @@ class ATCS:
     def __init__(self, seed: int = 100):
         # Set the random seed for reproducibility
         self.seed = seed
-        np.random.seed(self.seed) 
+        self.rng = np.random.default_rng(seed=self.seed)
 
         # Given parameters
         self.m = 8  # Max chargers per station
@@ -73,7 +73,7 @@ class ATCS:
 
     def determine_charging_decision(self) -> pd.DataFrame:
         prob_mat = np.exp(-(self.ld**2) * ((self.r_s_df - self.r_min)**2))
-        uniform_mat = np.random.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten()))
+        uniform_mat = self.rng.uniform(low=0, high=1, size=len(self.r_s_df.to_numpy().flatten()))
         uniform_mat = uniform_mat.reshape(len(self.r_s_df), len(self.r_s_df.columns))
         should_charge_mat = uniform_mat <= prob_mat
         should_charge_mat = should_charge_mat.astype('int')
