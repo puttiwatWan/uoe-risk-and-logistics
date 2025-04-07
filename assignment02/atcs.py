@@ -25,6 +25,7 @@ class ATCS(Parameters):
         # Stochastic values
         self.cc_df = self.determine_charging_decision()  # same size as range_sc_df. value 0 or 1 -> charge or not
         self.expected_range = self.calculate_stochastic_expected_range()  # expected range from range_sc_df
+        self.random_start = self.generate_random_start()
 
         # Initialize subset variables
         self.r_sub_df = None
@@ -52,6 +53,7 @@ class ATCS(Parameters):
         self.cc_sub_df = self.cc_df.loc[self.l_sub_df.index, :]
         self.expected_range_sub = self.expected_range.loc[self.l_sub_df.index, :]
         self.distance_matrix_sub = self.get_distance_matrix(sample_subset=True)
+        self.random_start = self.generate_random_start(n_sample=n_sample)
         
     def get_distance_matrix(self, sample_subset=False) -> np.ndarray:
         if sample_subset:
@@ -77,3 +79,12 @@ class ATCS(Parameters):
 
     def calculate_stochastic_expected_range(self) -> pd.DataFrame:
         return (self.cc_df * self.r_s_df).replace(0, np.NaN).mean(axis=1).to_frame(name="expected_range")
+
+    def generate_random_start(self, n_sample: int = None) -> np.ndarray:
+        number_to_random = math.floor(0.1 * len(self.r_df))  # random start 10% of the samples
+        choice = self.r_df.index.to_numpy()
+        if n_sample:
+            number_to_random = math.floor(0.1 * n_sample)
+            choice = self.r_sub_df.index.to_numpy()
+
+        return self.rng.choice(choice, size=number_to_random, replace=False)

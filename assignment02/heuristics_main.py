@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from atcs import ATCS
@@ -15,7 +17,6 @@ def main():
     seed = config.seed
     use_subset_robot = config.use_subset_robot
     n_samples = config.n_samples
-    starting_robot = config.default_starting_robot
 
     set_print_time(print_time)
     data = ATCS(seed=seed)
@@ -32,16 +33,26 @@ def main():
     robot_loc = np.array(robot_loc)
     robot_range = np.array(robot_range)
 
-    # Solve Construction Heuristics
-    print_separator("Construction Heuristics")
-    solver = ConstructionHeuristicSolver(robot_range=robot_range,
-                                         robot_loc=robot_loc,
-                                         robot_distance_matrix=dist_matrix)
+    # random_start = data.random_start
+    random_start = [config.default_starting_robot]
+    results = None
+    best_solver = None
+    for r in random_start:
+        # Solve Construction Heuristics
+        print_separator(f"Construction Heuristics Starting at Robot {r}")
+        solver = ConstructionHeuristicSolver(robot_range=robot_range,
+                                             robot_loc=robot_loc,
+                                             robot_distance_matrix=dist_matrix)
 
-    solver.solve(starting_robot=starting_robot)
-    solver.print_results()
+        solver.solve(starting_robot=r)
+        solver.print_results()
+        tmp_results = solver.get_heuristics_results()
+        if results is None or results.objective_value > tmp_results.objective_value:
+            best_solver = copy.deepcopy(solver)
+            results = copy.deepcopy(tmp_results)
 
-    results = solver.get_heuristics_results()
+    print("Best results is: ")
+    best_solver.print_results()
 
     print_separator("Improving Centroid Heuristics")
     solver = ImprovementCentroidHeuristics(robot_range=robot_range,
