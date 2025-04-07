@@ -15,6 +15,22 @@ class ImprovementInterchange:
         self.cover_range: int = raw.get('cover_range')
 
 
+class ParametersConfig:
+    def __init__(self, raw):
+        if raw is None:
+            raw = dict()
+
+        self.m: int = raw.get('m')
+        self.q: int = raw.get('q')
+        self.c_b: int = raw.get('c_b')
+        self.c_h: int = raw.get('c_h')
+        self.c_m: int = raw.get('c_m')
+        self.c_c: int = raw.get('c_c')
+        self.ld: int = raw.get('ld')
+        self.r_min: int = raw.get('r_min')
+        self.r_max: int = raw.get('r_max')
+
+
 class Config:
     def __init__(self, raw):
         if raw is None:
@@ -28,3 +44,4 @@ class Config:
         self.improvement_centroid: ImprovementCentroid = ImprovementCentroid(raw.get('improvement_centroid'))
         self.improvement_interchange: ImprovementInterchange = ImprovementInterchange(
             raw.get('improvement_interchange'))
+        self.parameters: ParametersConfig = ParametersConfig(raw.get("parameters"))

@@ -7,6 +7,7 @@ import numpy as np
 
 from config import config
 from utils import time_spent_decorator, find_centroid
+from utils.parameters import Parameters
 
 
 class HeuristicsResults:
@@ -24,22 +25,12 @@ class HeuristicsResults:
             self.stations_with_penalty = stations_with_penalty.copy()
 
 
-class HeuristicSolver(ABC):
+class HeuristicSolver(ABC, Parameters):
     def __init__(self, robot_loc: np.array(List[Tuple[float, float]]),
                  robot_range: np.array(List[float]),
                  robot_distance_matrix: np.ndarray,
                  ):
-        # Given parameters
-        self.m = 8  # Max chargers per station
-        self.q = 2  # Max robots per charger
-
-        self.c_b = 5000  # Build cost per station
-        self.c_h = 1000  # Cost of moving a robot when out of range
-        self.c_m = 500  # Cost per charger
-        self.c_c = 0.42  # Charging cost per km
-        self.ld = 0.012  # Lambda parameter for exponential distribution
-        self.r_min = 10  # Minimum range of a robot
-        self.r_max = 175  # Maximum range of a robot
+        super().__init__()
 
         self.total_robots = len(robot_loc)
         self.robot_loc = robot_loc.copy()

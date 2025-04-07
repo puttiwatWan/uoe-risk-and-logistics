@@ -3,23 +3,16 @@ import os
 import pandas as pd
 import numpy as np
 
+from utils.parameters import Parameters
 
-class ATCS:
+
+class ATCS(Parameters):
     def __init__(self, seed: int = 100):
+        super().__init__()
+
         # Set the random seed for reproducibility
         self.seed = seed
         self.rng = np.random.default_rng(seed=self.seed)
-
-        # Given parameters
-        self.m = 8  # Max chargers per station
-        self.q = 2  # Max robots per charger
-        self.c_b = 5000  # Investment cost per station
-        self.c_h = 1000  # Cost of moving a robot
-        self.c_m = 500  # Maintenance cost per charger
-        self.c_c = 0.42  # Charging cost per km
-        self.ld = 0.012  # Lambda parameter for exponential distribution
-        self.r_min = 10  # Minimum range of a robot
-        self.r_max = 175  # Maximum range of a robot
 
         # Initialization the given data
         # Load robot data
