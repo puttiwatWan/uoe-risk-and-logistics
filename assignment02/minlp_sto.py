@@ -60,7 +60,6 @@ def run_minlp_stochastic(data:ATCS, N_sample, sample_type, seed = 1,save = True)
     model.addConstraint(beta[v,s,k] <= A_dict[v,k] * mu[s] for v in V for s in S for k in K) 
 
     model.addConstraint(xp.Sum(mu[s] for s in S) >= L_Station)
-    model.addConstraint(xp.Sum(mu[s] for s in S) <= L_Station + 1)
     # Each Robot v must be allocated to only one station
     model.addConstraint(xp.Sum(beta[v,s,k] for s in S) == 1 * A_dict[v,k] for v in V for k in K)
 

@@ -61,7 +61,6 @@ def run_minlp_deterministic(data:ATCS, N_sample, sample_type, seed = 1,save = Tr
     model.addConstraint(beta[v,s] <= mu[s] for v in V for s in S) 
 
     model.addConstraint(xp.Sum(mu[s] for s in S) >= L_Station)
-    # model.addConstraint(xp.Sum(mu[s] for s in S) <= L_Station + 2)
     # Each Robot v must be allocated to only one station
     model.addConstraint(xp.Sum(beta[v,s] for s in S) == 1 for v in V)
 
@@ -93,7 +92,7 @@ def run_minlp_deterministic(data:ATCS, N_sample, sample_type, seed = 1,save = Tr
 
     model.setObjective(obj, sense=xp.minimize)
     # model.setControl('miprelstop', 1e-3)
-    model.setControl('maxtime', 3600)
+    model.setControl('maxtime', 300)
     tic = time.time()
     # Solve the problem
     model.solve()
@@ -130,15 +129,17 @@ def run_minlp_deterministic(data:ATCS, N_sample, sample_type, seed = 1,save = Tr
 
 
 if __name__ == "__main__":
-    N_sample = 50
-    seed = 1
-    solver_type = 'minlp'
-    model_type = 'deterministic'
-    sample_type = f'head'
-    data = ATCS(seed = 1)
-    data.choose_subset_point(N_sample, randomized = False) # Choose subset data
+    for N_sample in [25, 50, 75, 100, 125, 150]:
+        print(f'N_sample: {N_sample}')
+        # N_sample = 50
+        seed = 1
+        solver_type = 'minlp'
+        model_type = 'deterministic'
+        sample_type = f'head'
+        data = ATCS(seed = 1)
+        data.choose_subset_point(N_sample, randomized = False) # Choose subset data
 
-    (summary_df, station_df, robot_df, 
-    mu_dict, eta_dict, x_dict, y_dict, 
-    beta_dict, alpha_dict, d_dict) = run_minlp_deterministic(data, N_sample, sample_type, seed = 1,save = True)
+        (summary_df, station_df, robot_df, 
+        mu_dict, eta_dict, x_dict, y_dict, 
+        beta_dict, alpha_dict, d_dict) = run_minlp_deterministic(data, N_sample, sample_type, seed = 1,save = True)
 
