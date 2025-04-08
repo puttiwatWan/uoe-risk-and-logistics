@@ -1,19 +1,29 @@
-## Heuristics Run
+## Dependencies
+To install dependencies, simply run:
+```commandline
+pip install -r requirements.txt
+```
+
+---
+## Run
+### Heuristics Run
 To run the deterministic heuristics, run the file `heuristic_main.py` 
 To run the stochastic heuristics, run the file `sto_heuristic_main.py` 
 
-## MINLP Run
+### MINLP Run
 To run the deterministic MINLP, run the file `minlp_deter.py` 
 To run the stochastic MINLP, run the file `minlp_sto.py` 
 
+---
 ## Heuristics Algorithm
 The heuristics algorithm is stored in the files under `heuristics/` folder.
 The files are separated into deterministic and stochastic version, 
 where the stochastic version reuses the base method in the deterministic version.
-
+---
 ## Pre-Processing Logic
 `atcs.py` is the main file used to process the given data and extract the desired values.
 
+---
 ## Config
 The main configuration is in `config.yaml` file.
 
@@ -35,3 +45,4 @@ The fixed start logic is the default option for the construction heuristics (`us
 The default robot chosen for starting point is 1.
 The value can be updated by setting `default_starting_robot` to the desired robot. 
 Noted that this value affects both deterministic and stochastic version.
+---
