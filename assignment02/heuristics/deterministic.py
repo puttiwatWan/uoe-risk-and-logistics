@@ -262,6 +262,7 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
 
         self.min_robots_req = [m for m in range(self.q * self.m) if self.c_b < m * self.c_h][0]
 
+    @time_spent_decorator
     def solve(self, **kwargs):
         max_rps = self.m * self.q
         station_to_remove = []
@@ -360,7 +361,8 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
         print(f"stations location: {res.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
-        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
+        return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc,
+                                                                      self.stations_penalty),
                                  stations_alloc=self.stations.copy(),
                                  stations_loc=self.stations_loc.copy(),
                                  stations_with_penalty=self.stations_penalty.copy())
@@ -380,6 +382,7 @@ class ImprovementLocalSearchHeuristics(HeuristicSolver):
         self.stations_loc = results.stations_loc.copy()
         self.stations_penalty = results.stations_with_penalty.copy()
 
+    @time_spent_decorator
     def solve(self, **kwargs):
         total_stations = len(self.stations)
         cover_range = config.improvement_interchange.cover_range

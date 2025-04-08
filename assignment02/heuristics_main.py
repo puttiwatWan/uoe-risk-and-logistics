@@ -36,22 +36,28 @@ def main():
     random_start = [config.default_starting_robot]
     if config.use_random_start:
         random_start = data.random_start
-    results = None
-    best_solver = None
-    for r in random_start:
-        # Solve Construction Heuristics
-        print_separator(f"Construction Heuristics Starting at Robot {r}")
-        solver = ConstructionHeuristicSolver(robot_range=robot_range,
-                                             robot_loc=robot_loc,
-                                             robot_distance_matrix=dist_matrix)
 
-        solver.solve(starting_robot=r)
-        solver.print_results()
-        tmp_results = solver.get_heuristics_results()
-        if results is None or results.objective_value > tmp_results.objective_value:
-            best_solver = copy.deepcopy(solver)
-            results = copy.deepcopy(tmp_results)
+    @time_spent_decorator
+    def run_construction():
+        results_tmp = None
+        best_solver_tmp = None
+        for r in random_start:
+            # Solve Construction Heuristics
+            print_separator(f"Construction Heuristics Starting at Robot {r}")
+            solver_tmp = ConstructionHeuristicSolver(robot_range=robot_range,
+                                                     robot_loc=robot_loc,
+                                                     robot_distance_matrix=dist_matrix)
 
+            solver_tmp.solve(starting_robot=r)
+            solver_tmp.print_results()
+            tmp_results = solver_tmp.get_heuristics_results()
+            if results_tmp is None or results_tmp.objective_value > tmp_results.objective_value:
+                best_solver_tmp = copy.deepcopy(solver_tmp)
+                results_tmp = copy.deepcopy(tmp_results)
+        return results_tmp, best_solver_tmp
+
+    results, best_solver = run_construction()
+    print("-" * 20)
     print("Best results is: ")
     best_solver.print_results()
 
