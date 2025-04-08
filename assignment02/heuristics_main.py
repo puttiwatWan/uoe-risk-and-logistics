@@ -33,8 +33,9 @@ def main():
     robot_loc = np.array(robot_loc)
     robot_range = np.array(robot_range)
 
-    # random_start = data.random_start
     random_start = [config.default_starting_robot]
+    if config.use_random_start:
+        random_start = data.random_start
     results = None
     best_solver = None
     for r in random_start:

@@ -38,6 +38,7 @@ class Config:
 
         self.print_time: bool = raw.get('print_time')
         self.use_subset_robot: bool = raw.get('use_subset_robot')
+        self.use_random_start: bool = raw.get('use_random_start')
         self.seed: int = raw.get('seed')
         self.n_samples: int = raw.get('n_samples')
         self.default_starting_robot: int = raw.get('default_starting_robot')
