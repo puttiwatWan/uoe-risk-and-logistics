@@ -163,19 +163,14 @@ class ConstructionHeuristicSolver(HeuristicSolver):
             robot = self.find_next_robot(robot)
 
     def print_results(self):
-        centroids = [self.find_weighted_centroid(tuple(station)) for station in self.stations]
-        print(f"The total cost is {self.find_total_cost(self.stations, centroids)}")
-        print(f"robot in stations: {self.stations}")
-
-        s_loc = []
-        for station in self.stations:
-            s_loc.append(self.find_weighted_centroid(tuple(station)))
-        print(f"stations location: {s_loc}")
+        res = self.get_heuristics_results()
+        print(f"The total cost is {res.objective_value}")
+        print(f"Total stations: {len(res.stations)}")
+        print(f"robot in stations: {res.stations}")
+        print(f"stations location: {res.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
-        s_loc = []
-        for station in self.stations:
-            s_loc.append(self.find_weighted_centroid(tuple(station)))
+        s_loc = [self.find_weighted_centroid(tuple(station)) for station in self.stations]
         return HeuristicsResults(objective_value=self.find_total_cost(self.stations, s_loc),
                                  stations_loc=s_loc,
                                  stations_alloc=self.stations.copy())
@@ -237,10 +232,11 @@ class ImprovementCentroidHeuristics(HeuristicSolver):
                     penalty_count = 0
 
     def print_results(self):
-        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc, self.stations_penalty)}")
-        print(f"Total stations: {len(self.stations)}")
-        print(f"robot in stations: {self.stations}")
-        print(f"stations location: {self.stations_loc}")
+        res = self.get_heuristics_results()
+        print(f"The total cost is {res.objective_value}")
+        print(f"Total stations: {len(res.stations)}")
+        print(f"robot in stations: {res.stations}")
+        print(f"stations location: {res.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
         return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc,
@@ -356,11 +352,12 @@ class ImprovementStationsReductionHeuristics(HeuristicSolver):
             self.stations_loc.pop(s-i)
 
     def print_results(self):
-        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc, self.stations_penalty)}")
-        print(f"Total stations: {len(self.stations)}")
-        print(f"robot in stations: {self.stations}")
-        print(f"penalty robot in stations: {self.stations_penalty}")
-        print(f"stations location: {self.stations_loc}")
+        res = self.get_heuristics_results()
+        print(f"The total cost is {res.objective_value}")
+        print(f"Total stations: {len(res.stations)}")
+        print(f"robot in stations: {res.stations}")
+        print(f"penalty robot in stations: {res.stations_with_penalty}")
+        print(f"stations location: {res.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
         return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
@@ -481,11 +478,12 @@ class ImprovementLocalSearchHeuristics(HeuristicSolver):
                 skipped_stations.append(s)
 
     def print_results(self):
-        print(f"The improved cost is {self.find_total_cost(self.stations, self.stations_loc)}")
-        print(f"Total stations: {len(self.stations)}")
-        print(f"robot in stations: {self.stations}")
-        print(f"penalty robot in stations: {self.stations_penalty}")
-        print(f"stations location: {self.stations_loc}")
+        res = self.get_heuristics_results()
+        print(f"The total cost is {res.objective_value}")
+        print(f"Total stations: {len(res.stations)}")
+        print(f"robot in stations: {res.stations}")
+        print(f"penalty robot in stations: {res.stations_with_penalty}")
+        print(f"stations location: {res.stations_loc}")
 
     def get_heuristics_results(self) -> HeuristicsResults:
         return HeuristicsResults(objective_value=self.find_total_cost(self.stations, self.stations_loc),
