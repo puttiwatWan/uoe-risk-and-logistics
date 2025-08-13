@@ -1,0 +1,181 @@
+Original problem size
+   linear:    52012 rows, 30040 columns, 87230 linear coefficients
+   nonlinear: 10000 coefficients, 310000 tokens
+              70000 mul             0 div     10000 sqrt
+Nonlinear presolve
+   linear presolve removed 24767 rows, 4760 columns, 33820 linear coefficients
+   removed 9520 fixed variables from formulas
+   simplify removed 38080 tokens
+   creating 15240 '+' clusters removed 20000 tokens
+Presolved problem size
+   linear:    27245 rows, 25281 columns, 53410 linear coefficients
+   nonlinear: 10000 coefficients, 251920 tokens
+              40480 mul             0 div     10000 sqrt
+                  0 exp             0 log     20000 pow
+Problem is nonlinear presolved
+FICO Xpress v9.4.2, Hyper, solve started 21:11:43, Apr 7, 2025
+Control settings used:
+MAXTIME = 3600
+OUTPUTLOG = 1
+NLPPOSTSOLVE = 1
+XSLP_DELETIONCONTROL = 0
+XSLP_OBJSENSE = 1
+Maximum expanded nl-formula size: 29  (row 'R32015')
+Total tokens: 251920
+  11  parallel calculation threads
+  Jacobian: symbolic differentiation
+       10000 base AD formula, 20.668 average complexity
+       30480 in the Jacobian, 18.0604 average complexity
+Initial point objective:  109936.20
+Absolute / relative validation:            .000  /     1.000
+Minimizing problem using Xpress-SLP
+Xpress-SLP Augmentation Statistics:
+  Columns:
+          20 implicit SLP variables
+       10500 delta vectors
+       10000 penalty error vectors (10000 positive, 0 negative)
+  Rows:
+       10000 nonlinear constraints
+       10500 update rows
+           1 penalty error rows
+  Coefficients:
+       50480 non-constant coefficients
+
+ It LP    NetObj   ValObj ErrorSum ErrorCost Validate   KKT Unconv  Ext Action T
+  1 O  7501.4194  7501.41      .00      .00      .55          8100    0        2
+  2 O  7501.4194               .00      .00                   1049    0        2
+  3 O  7501.4194               .00      .00                      2    0        2
+  4 O  7501.4194               .00      .00                      2    0        2
+  5 O  7501.4194               .00      .00                      2    0        2
+  6 O  7501.4194               .00      .00                      2    0        2
+  7 O  7501.4194               .00      .00                      2    0        2
+  8 O  7501.4194               .00      .00                      2    0        2
+  9 O  7501.4194               .00      .00                      2    0        2
+ 10 O  7501.4194               .00      .00                      2    0        3
+ 11 O  7501.4194               .00      .00                      2    0        3
+ 12 O  7501.4194               .00      .00                      1    0        3
+ 13 O  7501.4194               .00      .00                      1    0        3
+ 14 O  7501.4194               .00      .00                      1    0        3
+ 15 O  7501.4194               .00      .00                   1050    0        3
+ 16 O  7501.4194               .00      .00                   1574    0        3
+ 17 O  7501.4194               .00      .00                   1051    0        3
+ 18 O  7501.4194  7501.41      .00      .00      .00      .00    0    0 *      4
+Best solution achieved by cascading at iteration 18
+Final linearization will not match solution returned
+  Restored solution with objective:  7501.4194
+
+Xpress-SLP stopped after 18 iterations. 1051 unconverged items
+Problem solved using Xpress-NLP SLP
+Converged on objective function with no unconverged values in active constraints
+No unconverged values in active constraints
+FICO Xpress v9.4.2, Hyper, solve started 21:11:47, Apr 7, 2025
+Heap usage: 16MB (peak 18MB, 17MB system)
+Minimizing MILP MINLP_Stochastic using 1 thread and up to 18GB memory
+Original problem has:
+     37746 rows        45782 cols       134745 elements     20020 entities
+
+Coefficient range                    original                 solved        
+  Coefficients   [min,max] : [ 1.00e-05,  6.54e+01] / [ 5.22e-09,  2.00e+00]
+  RHS and bounds [min,max] : [ 3.76e-03,  1.69e+02] / [ 3.76e-03,  1.69e+02]
+  Objective      [min,max] : [ 4.20e-03,  5.00e+03] / [ 3.36e-02,  5.00e+03]
+Autoscaling applied standard scaling
+
+Will try to keep branch and bound tree memory usage below 17.0GB
+ *** Search unfinished ***    Time:     0.10 Nodes:          0
+  Solution time / primaldual integral :      0.10s/ 100.000000%
+  Number of solutions found / nodes   :         0 /         0
+
+Starting nonlinear heuristics
+Heuristics stopped     9.097s
+
+Invoking SLP global search
+MIP strategy: SLP within MIP
+
+
+Using 11 parallel tree threads
+
+   Node  BestSoln   BoundEstim Sols Active Depth   Gap     GInf    SLPIts  Time
+      1             7501.4194   0      2     1             2104       39     41
+      2             7501.4194   0      2     2             2630       76     49
+      3             7501.4194   0      3     2               32       81     51
+      4             7501.4194   0      4     3             1052      114     57
+      5             7501.4194   0      5     3             1553      163     59
+      6             7501.4194   0      6     4             1578      180     61
+      7             7501.4194   0      7     3               31      197     63
+      8             7501.4194   0      8     3               32      262     80
+      9             7501.4194   0      9     4              432      262     80
+     10             7501.4194   0     10     4               31      262     80
+     20             7501.4194   0     20     7             1578      392    103
+     30             7501.4194   0     28     7             3027      494    120
+     40             7501.4194   0     36    10             1537      763    131
+     50             7501.4194   0     41    11             1556      868    135
+     60             7501.4194   0     48    13              829      975    139
+     70             7501.4194   0     54    12               31     1140    143
+     80             7501.4194   0     66    12               30     1270    148
+     90             7501.4194   0     70    15              811     1407    153
+    100             7501.4194   0     77    13               31     1516    157
+    200             7501.4194   0    148    20               28     3084    213
+    301             7501.4194   0    227    26               22     4727    256
+    403             7501.4194   0    296    31             1015     6471    292
+    503             7501.4194   0    368    40                9     8016    329
+    603             7501.4194   0    438    66              702     9779    371
+k   607  8054.7713  7501.4194   1      0     0     6.86%      0     9936    375
+    980  8054.7713  7501.4194   1     99     1     6.86%      1    10179    380
+*   624  8054.7713  7501.4194   2      0     0     6.86%      0    10197    382
+    981  8054.7713  7501.4194   2     99    40     6.86%      0    10197    382
+   1089  8054.7713  7501.4194   2     93     1     6.86%      1    10633    404
+   1192  8054.7713  7501.4194   2     94    17     6.86%     27    17904    466
+   1293  8054.7713  7501.4194   2    109    18     6.86%     40    22745    501
+   1393  8054.7713  7501.4194   2    114    18     6.86%     26    26432    528
+   1497  8054.7713  7501.4194   2    122    28     6.86%     42    29348    546
+   1597  8054.7713  7501.4194   2    124    22     6.86%     36    35705    587
+   1699  8054.7713  7501.4194   2    134    20     6.86%     38    37532    602
+   1801  8054.7713  7501.4194   2    128    26     6.86%     32    42781    637
+   1902  8054.7713  7501.4194   2    122    31     6.86%     15    46050    660
+   2002  8054.7713  7501.4194   2    117    32     6.86%     27    50254    688
+   2103  8054.7713  7501.4194   2    122    28     6.86%     17    54460    717
+   2204  8054.7713  7501.4194   2    143    14     6.86%     46    56976    736
+   2305  8054.7713  7501.4194   2    139    19     6.86%     25    62570    775
+   2406  8054.7713  7501.4194   2    139    31     6.86%     10    63565    784
+   2507  8054.7713  7501.4194   2    141    19     6.86%     40    70350    830
+   2608  8054.7713  7501.4194   2    131    30     6.86%     14    74390    859
+   2710  8054.7713  7501.4194   2    115    28     6.86%      9    79136    892
+   2811  8054.7713  7501.4194   2    116    26     6.86%     17    83322    919
+   2911  8054.7713  7501.4194   2    115    30     6.86%     39    86515    942
+   3011  8054.7713  7501.4194   2    123    19     6.86%     13    90603    976
+   3111  8054.7713  7501.4194   2    111    24     6.86%     60    94361   1007
+   3213  8054.7713  7501.4194   2    102    36     6.86%     10    99359   1048
+   3314  8054.7713  7501.4194   2     85    24     6.86%     59   103292   1079
+d  3359  8054.3196  7501.4194   3      0     0     6.86%      0   105661   1098
+   3416  8054.3196  7501.4194   3     63    26     6.86%     12   106709   1109
+*  3457  8054.3196  7501.4194   4      0     0     6.86%      0   107856   1121
+   3479  8054.3196  7501.4194   4     40    39     6.86%      0   109040   1136
+   3516  8054.3196  7501.4194   4     34    22     6.86%     62   110013   1144
+d  3578  8013.6399  7501.4194   5      0     0     6.39%      0   110943   1153
+   3619  8013.6399  7501.4194   5     28    31     6.39%      8   114094   1174
+   3719  8013.6399  7501.4194   5     20    27     6.39%     16   117748   1199
+   3819  8013.6399  7501.4194   5     13    26     6.39%      9   120318   1218
+   3919  8013.6399  7501.4194   5     13    30     6.39%      5   123807   1247
+   4019  8013.6399  7501.4194   5     15    28     6.39%      9   127334   1278
+   4121  8013.6399  7501.4194   5     15    28     6.39%      7   131053   1307
+   4222  8013.6399  7501.4194   5     22    21     6.39%      8   135985   1347
+   4322  8013.6399  7501.4194   5     11    25     6.39%      4   137449   1358
+   4422  8013.6399  7501.4194   5      3    22     6.39%     22   140075   1387
+Tree search: completed
+
+  ! There were function evaluation errors during the MIP search
+
+Integer solution statistics:
+  NLP heuristics: 0
+  MIP heuristics: 3
+  Tree search   : 2
+Problem is nonlinear postsolved
+Heap usage: 120MB (peak 5460MB, 2711KB system)
+Observed Lipschitz constant:    65.417
+
+Final MINLP objective (feas. solution)  : 8.013639995174783e+03
+  Max validation error      (abs/rel) :      .000 /      .000
+  Observed primal integral :   26.768%
+  Total time :              1415.653s 
+  Time checks (ticks) :        5673 
+*** Search completed ***

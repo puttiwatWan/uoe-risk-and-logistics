@@ -1,0 +1,121 @@
+Original problem size
+   linear:    8805 rows, 4816 columns, 14568 linear coefficients
+   nonlinear: 912 coefficients, 28272 tokens
+             6384 mul             0 div       912 sqrt
+Nonlinear presolve
+   linear presolve removed 4536 rows, 2064 columns, 5052 linear coefficients
+   creating 1824 '+' clusters removed 1824 tokens
+Presolved problem size
+   linear:    4269 rows, 2753 columns, 9516 linear coefficients
+   nonlinear: 912 coefficients, 26448 tokens
+             4560 mul             0 div       912 sqrt
+                0 exp             0 log      1824 pow
+Problem is nonlinear presolved
+FICO Xpress v9.4.2, Hyper, solve started 3:15:31, Apr 8, 2025
+Control settings used:
+MAXTIME = 3600
+OUTPUTLOG = 1
+NLPPOSTSOLVE = 1
+XSLP_DELETIONCONTROL = 0
+XSLP_OBJSENSE = 1
+Maximum expanded nl-formula size: 29  (row 'R5608')
+Total tokens: 26448
+  11  parallel calculation threads
+  Jacobian: symbolic differentiation
+         912 base AD formula, 24 average complexity
+        3648 in the Jacobian, 14 average complexity
+Initial point objective:  31561.631
+Absolute / relative validation:            .000  /      .750
+Minimizing problem using Xpress-SLP
+Xpress-SLP Augmentation Statistics:
+  Columns:
+           8 implicit SLP variables
+        1832 delta vectors
+         912 penalty error vectors (912 positive, 0 negative)
+  Rows:
+         912 nonlinear constraints
+        1832 update rows
+           1 penalty error rows
+  Coefficients:
+        5472 non-constant coefficients
+Initial point infeasible to linearization
+
+ It LP    NetObj   ValObj ErrorSum ErrorCost Validate   KKT Unconv  Ext Action T
+  1 O  6109.4502  6109.45      .00      .00      .36          1083    0        0
+  2 O  6109.4502               .00      .00                    457    0        0
+  3 O  6109.4502  6109.45      .00      .00      .00      .00    0    0 *      0
+Returning final converged solution
+
+Xpress-SLP stopped after 3 iterations. 0 unconverged items
+Problem solved using Xpress-NLP SLP
+No unconverged values in active constraints
+FICO Xpress v9.4.2, Hyper, solve started 3:15:31, Apr 8, 2025
+Heap usage: 2549KB (peak 2765KB, 3578KB system)
+Minimizing MILP MINLP_Stochastic using 1 thread and up to 18GB memory
+Original problem has:
+      6102 rows         5498 cols        19394 elements      1832 entities
+
+Coefficient range                    original                 solved        
+  Coefficients   [min,max] : [ 1.00e-05,  3.00e+01] / [ 6.25e-07,  1.88e+00]
+  RHS and bounds [min,max] : [ 5.21e-03,  1.35e+02] / [ 5.21e-03,  1.35e+02]
+  Objective      [min,max] : [ 4.20e-03,  5.00e+03] / [ 3.36e-02,  5.00e+03]
+Autoscaling applied standard scaling
+
+Will try to keep branch and bound tree memory usage below 17.0GB
+ *** Search unfinished ***    Time:     0.02 Nodes:          0
+  Solution time / primaldual integral :      0.02s/ 100.000000%
+  Number of solutions found / nodes   :         0 /         0
+
+Starting nonlinear heuristics
+Heuristics stopped      .987s
+
+Invoking SLP global search
+MIP strategy: SLP within MIP
+
+
+Using 11 parallel tree threads
+
+   Node  BestSoln   BoundEstim Sols Active Depth   Gap     GInf    SLPIts  Time
+      1             6109.4502   0      2     1              690       24      5
+      2             6109.4502   0      2     2              460       60      5
+      3             6109.4502   0      3     2                4       65      5
+      4             6109.4502   0      4     3              460      100      5
+      5             6109.4502   0      5     3                3      148      5
+      6             6109.4502   0      6     3                4      181      6
+      7             6109.4502   0      7     4                4      199      6
+      8             6109.4502   0      8     3                2      233      6
+d     6  6141.4990  6109.4502   1      0     0      .52%      0      250      6
+      9  6141.4990  6109.4502   1      9     4      .52%      2      284      6
+     10  6141.4990  6109.4502   1     10     4      .52%      2      284      6
+d     5  6141.4990  6109.4502   2      0     0      .52%      0      369      6
+     20  6141.4990  6109.4502   2     20     5      .52%      1      443      7
+*    19  6141.4990  6109.4502   3      0     0      .52%      0      466      7
+     24  6141.4990  6109.4502   3     17     6      .52%      0      466      7
+     30  6141.4990  6109.4502   3     16     6      .52%      1      643      8
+*    26  6141.4990  6109.4502   4      0     0      .52%      0      643      8
+d    32  6141.4990  6109.4502   5      0     0      .52%      0      798      8
+     37  6141.4990  6109.4502   5     12     5      .52%      0      798      8
+     41  6141.4990  6109.4502   5     10     1      .52%      1      976      9
+d    37  6141.4990  6109.4502   6      0     0      .52%      0     1110      9
+*    44  6141.4990  6109.4502   7      0     0      .52%      0     1247     10
+     46  6141.4990  6109.4502   7      5     6      .52%      0     1247     10
+     53  6141.4990  6109.4502   7      3     7      .52%      2     1247     10
+*    53  6141.4990  6109.4502   8      0     0      .52%      0     1265     10
+     55  6141.4990  6109.4502   8      2     6      .52%      0     1265     10
+     63  6141.4990  6109.4502   8      1     8      .52%      1     1265     10
+Tree search: MIP gap is sufficiently small
+
+Integer solution statistics:
+  NLP heuristics: 0
+  MIP heuristics: 4
+  Tree search   : 4
+Problem is nonlinear postsolved
+Heap usage: 25MB (peak 330MB, 763KB system)
+Observed Lipschitz constant:    30.016
+
+Final MINLP objective (feas. solution)  : 6.141499052206846e+03
+  Max validation error      (abs/rel) :      .000 /      .000
+  Observed primal integral :   62.594%
+  Total time :                10.417s 
+  Time checks (ticks) :        44061 
+*** MIP gap is less than MIPABSSTOP/MIPRELSTOP ***
